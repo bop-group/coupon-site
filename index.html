@@ -339,6 +339,44 @@
     margin-bottom: 12px;
     background: #e9ecef;
   }
+  .detail-store-box {
+    background: #f0f7ff;
+    border: 1px solid #d6e8ff;
+    border-radius: 10px;
+    padding: 11px 12px;
+    margin-top: 12px;
+    text-align: left;
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+  .store-row {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    margin-bottom: 6px;
+  }
+  .store-row:last-child {
+    margin-bottom: 0;
+  }
+  .store-label {
+    font-weight: bold;
+    color: #374151;
+    flex-shrink: 0;
+  }
+  .store-link {
+    color: var(--primary);
+    font-weight: bold;
+    text-decoration: underline;
+    word-break: break-word;
+  }
+  .store-phone-link {
+    color: #111827;
+    font-weight: bold;
+    text-decoration: none;
+  }
+  .store-phone-link:hover {
+    text-decoration: underline;
+  }
   .detail-terms {
     background: #f6f7f9;
     padding: 11px 12px;
@@ -346,7 +384,7 @@
     font-size: 12px;
     color: #555;
     text-align: left;
-    margin-top: 12px;
+    margin-top: 10px;
     white-space: pre-line;
     line-height: 1.6;
   }
@@ -416,6 +454,23 @@
     </div>
     <h3 id="detailTitle" style="margin:0 0 8px; font-size:18px;"></h3>
     <p id="detailDesc" style="font-size:14px; color:#333; margin:0; line-height:1.6;"></p>
+
+    <!-- 店舗情報（設定されている場合のみ表示） -->
+    <div class="detail-store-box" id="detailStoreBox" style="display:none;">
+      <div class="store-row" id="storeNameRow" style="display:none;">
+        <span class="store-label" id="labelStoreName"></span>
+        <span id="detailStoreName"></span>
+      </div>
+      <div class="store-row" id="storeAddressRow" style="display:none;">
+        <span class="store-label" id="labelStoreAddress"></span>
+        <a id="detailStoreAddressLink" class="store-link" href="#" target="_blank" rel="noopener noreferrer"></a>
+      </div>
+      <div class="store-row" id="storePhoneRow" style="display:none;">
+        <span class="store-label" id="labelStorePhone"></span>
+        <a id="detailStorePhoneLink" class="store-phone-link" href="#"></a>
+      </div>
+    </div>
+
     <div class="detail-terms" id="detailTerms"></div>
     <button type="button" id="useBtn" class="btn btn-use" onclick="useCoupon()"></button>
     <p id="staffNote" style="font-size:11px; color:#888; margin-top:8px;"></p>
@@ -454,6 +509,9 @@ const I18N = {
     pwPlaceholder: "パスワードを入力",
     pwSubmitBtn: "ロックを解除する",
     pwError: "パスワードが正しくありません",
+    storeNameLabel: "店舗名：",
+    addressLabel: "住所（地図）：",
+    phoneLabel: "電話番号：",
     useBtn: "クーポンを使用する（スタッフ提示）",
     confirmUseBtn: "本当に使用済みにしますか？（もう一度タップで確定）",
     alreadyUsedBtn: "このクーポンは使用済みです",
@@ -494,6 +552,9 @@ const I18N = {
     pwPlaceholder: "Enter password",
     pwSubmitBtn: "Unlock Coupons",
     pwError: "Incorrect password",
+    storeNameLabel: "Store:",
+    addressLabel: "Address (Map):",
+    phoneLabel: "Phone:",
     useBtn: "Redeem Coupon (Show to Staff)",
     confirmUseBtn: "Mark as used? Tap again to confirm",
     alreadyUsedBtn: "Already Used",
@@ -526,6 +587,9 @@ const I18N = {
     pwPlaceholder: "請輸入密碼",
     pwSubmitBtn: "解除鎖定",
     pwError: "密碼不正確",
+    storeNameLabel: "店家名稱：",
+    addressLabel: "地址（地圖）：",
+    phoneLabel: "電話：",
     useBtn: "使用優惠券（出示給店員）",
     confirmUseBtn: "確定要標記為已使用嗎？請再點一次確認",
     alreadyUsedBtn: "此優惠券已使用",
@@ -558,6 +622,9 @@ const I18N = {
     pwPlaceholder: "비밀번호 입력",
     pwSubmitBtn: "잠금 해제",
     pwError: "비밀번호가 올바르지 않습니다",
+    storeNameLabel: "매장명:",
+    addressLabel: "주소(지도):",
+    phoneLabel: "전화번호:",
     useBtn: "쿠폰 사용하기 (직원 제시)",
     confirmUseBtn: "사용 완료로 처리할까요? 한 번 더 탭하면 확정됩니다",
     alreadyUsedBtn: "이미 사용한 쿠폰입니다",
@@ -570,7 +637,8 @@ const I18N = {
 const CATEGORY_KEYS = ["food", "experience", "ticket"];
 const AREA_KEYS = ["shibuya", "shinjuku", "umeda"];
 
-// ★追加時は ja だけでもOK！en / zh / ko を書けば手動翻訳が優先されます
+// ★追加時は ja だけでもOK！
+// ※チェーン店などで店舗固有情報がない場合は storeName / address / phone を省略（または空文字）にしてください
 const coupons = [
   {
     id: "coupon_1",
@@ -584,6 +652,9 @@ const coupons = [
         title: "【初回限定】お会計から20%OFF",
         shortDesc: "全メニュー対象！お得な割引クーポン",
         detailDesc: "お会計時にこの画面をご提示いただくと、合計金額から20%割引いたします。",
+        storeName: "渋谷ダイニング バル",
+        address: "東京都渋谷区道玄坂1-2-3",
+        phone: "03-1234-5678",
         terms: "・有効期限：2026年12月末まで\n・他の割引との併用不可\n・お一人様1回限り有効"
       }
     }
@@ -600,6 +671,7 @@ const coupons = [
         title: "ドリンク1杯無料サービス",
         shortDesc: "お好きなソフトドリンクを1杯プレゼント",
         detailDesc: "お食事をご注文の方に、お好きなソフトドリンクを1杯無料でサービスいたします。",
+        // チェーン店・全店共通のため店舗情報は省略
         terms: "・有効期限：2026年12月末まで\n・アルコール類は対象外\n・1グループ1枚まで"
       }
     }
@@ -616,6 +688,9 @@ const coupons = [
         title: "ワークショップ体験 500円OFF",
         shortDesc: "人気のものづくり体験がお得に楽しめる",
         detailDesc: "対象の体験プログラム受付時にご提示で、参加費から500円割引いたします。",
+        storeName: "シブヤ クラフトスタジオ",
+        address: "東京都渋谷区渋谷2-10-5",
+        phone: "03-9876-5432",
         terms: "・有効期限：2026年12月末まで\n・事前予約が必要な体験あり\n・お一人様1回限り有効"
       }
     }
@@ -632,6 +707,9 @@ const coupons = [
         title: "施設入場料 100円引きクーポン",
         shortDesc: "当日窓口での入場チケットが割引",
         detailDesc: "チケット売り場で本画面をご提示いただくと、入場料を100円割引いたします。",
+        storeName: "梅田スカイ展望ギャラリー",
+        address: "大阪府大阪市北区大淀中1-1-88",
+        phone: "06-6440-3855",
         terms: "・有効期限：2026年12月末まで\n・他の優待券との併用不可\n・当日券のみ対象"
       }
     }
@@ -763,7 +841,7 @@ function ensureTranslationsForCurrentLang() {
   CATEGORY_KEYS.forEach(k => getMetaLabel("categories", k));
   AREA_KEYS.forEach(k => getMetaLabel("areas", k));
 
-  const fields = ["title", "shortDesc", "detailDesc", "terms"];
+  const fields = ["title", "shortDesc", "detailDesc", "storeName", "address", "terms"];
   coupons.forEach(coupon => {
     const jaData = coupon.i18n.ja || {};
     const manualData = coupon.i18n[currentLang] || {};
@@ -789,11 +867,16 @@ function t() {
 
 function getCouponText(coupon) {
   const jaData = coupon.i18n.ja || {};
+  const phone = (coupon.i18n[currentLang] && coupon.i18n[currentLang].phone) || jaData.phone || "";
+
   if (currentLang === "ja") {
     return {
       title: jaData.title || "",
       shortDesc: jaData.shortDesc || "",
       detailDesc: jaData.detailDesc || "",
+      storeName: jaData.storeName || "",
+      address: jaData.address || "",
+      phone,
       terms: jaData.terms || ""
     };
   }
@@ -802,6 +885,7 @@ function getCouponText(coupon) {
   const resolveField = field => {
     if (manualData[field]) return manualData[field];
     const src = jaData[field] || "";
+    if (!src) return "";
     const cached = getCachedTranslation("coupon", coupon.id, field, currentLang, src);
     return cached || src;
   };
@@ -810,8 +894,17 @@ function getCouponText(coupon) {
     title: resolveField("title"),
     shortDesc: resolveField("shortDesc"),
     detailDesc: resolveField("detailDesc"),
+    storeName: resolveField("storeName"),
+    address: resolveField("address"),
+    phone,
     terms: resolveField("terms")
   };
+}
+
+function buildGoogleMapUrl(coupon, addressText) {
+  if (coupon && coupon.mapUrl) return coupon.mapUrl;
+  const query = addressText || (coupon && typeof coupon.lat === "number" && typeof coupon.lng === "number" ? `${coupon.lat},${coupon.lng}` : "");
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
 function setLanguage(lang, saveChoice = false) {
@@ -862,6 +955,9 @@ function applyStaticTexts() {
   document.getElementById("pwInput").placeholder = dict.pwPlaceholder;
   document.getElementById("pwSubmitBtn").textContent = dict.pwSubmitBtn;
   document.getElementById("pwError").textContent = dict.pwError;
+  document.getElementById("labelStoreName").textContent = dict.storeNameLabel;
+  document.getElementById("labelStoreAddress").textContent = dict.addressLabel;
+  document.getElementById("labelStorePhone").textContent = dict.phoneLabel;
   document.getElementById("staffNote").textContent = dict.staffNote;
 
   updateUnlockBadge();
@@ -922,222 +1018,3 @@ function renderFilterChips() {
     btn.onclick = () => {
       selectedCategory = opt.key;
       renderFilterChips();
-      renderCoupons();
-    };
-    catBar.appendChild(btn);
-  });
-
-  const areaBar = document.getElementById("areaBar");
-  areaBar.innerHTML = "";
-
-  const areaOptions = [{ key: "all", label: dict.allAreas }].concat(
-    AREA_KEYS.map(k => ({ key: k, label: getMetaLabel("areas", k) }))
-  );
-  areaOptions.forEach(opt => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "chip-btn" + (selectedArea === opt.key ? " active" : "");
-    btn.textContent = opt.label;
-    btn.onclick = () => {
-      selectedArea = opt.key;
-      renderFilterChips();
-      renderCoupons();
-    };
-    areaBar.appendChild(btn);
-  });
-}
-
-function calcDistanceKm(lat1, lng1, lat2, lng2) {
-  const R = 6371;
-  const toRad = deg => deg * Math.PI / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLng = toRad(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-    Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
-}
-
-function sortByGPS() {
-  if (!navigator.geolocation) {
-    gpsState = "unsupported";
-    applyStaticTexts();
-    return;
-  }
-
-  gpsState = "loading";
-  applyStaticTexts();
-
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const { latitude, longitude } = pos.coords;
-      distanceMap = {};
-      coupons.forEach(c => {
-        if (typeof c.lat === "number" && typeof c.lng === "number") {
-          distanceMap[c.id] = calcDistanceKm(latitude, longitude, c.lat, c.lng);
-        }
-      });
-      gpsSorted = true;
-      gpsState = "sorted";
-      applyStaticTexts();
-      renderCoupons();
-    },
-    () => {
-      gpsState = "error";
-      applyStaticTexts();
-    },
-    { enableHighAccuracy: false, timeout: 8000 }
-  );
-}
-
-function resetGPS() {
-  gpsSorted = false;
-  gpsState = "idle";
-  distanceMap = {};
-  applyStaticTexts();
-  renderCoupons();
-}
-
-function formatDistance(km) {
-  if (typeof km !== "number") return "";
-  if (km < 1) return `${Math.round(km * 1000)}m`;
-  return `${km.toFixed(1)}km`;
-}
-
-function renderCoupons() {
-  const dict = t();
-  const list = document.getElementById("couponList");
-  list.innerHTML = "";
-
-  let filtered = coupons.filter(c => {
-    const matchCat = selectedCategory === "all" || c.category === selectedCategory;
-    const matchArea = selectedArea === "all" || c.area === selectedArea;
-    return matchCat && matchArea;
-  });
-
-  if (gpsSorted) {
-    filtered = [...filtered].sort((a, b) => {
-      const da = typeof distanceMap[a.id] === "number" ? distanceMap[a.id] : Infinity;
-      const db = typeof distanceMap[b.id] === "number" ? distanceMap[b.id] : Infinity;
-      return da - db;
-    });
-  }
-
-  if (filtered.length === 0) {
-    list.innerHTML = `<div class="empty-msg">${dict.empty}</div>`;
-    return;
-  }
-
-  filtered.forEach(c => {
-    const text = getCouponText(c);
-    const used = isCouponUsed(c.id);
-    const distText = gpsSorted ? formatDistance(distanceMap[c.id]) : "";
-    const catLabel = getMetaLabel("categories", c.category);
-    const areaLabel = getMetaLabel("areas", c.area);
-
-    const card = document.createElement("div");
-    card.className = "coupon-card";
-    card.onclick = () => handleCouponClick(c);
-
-    card.innerHTML = `
-      <img src="${c.image}" alt="${text.title}">
-      <div class="coupon-info">
-        <div class="meta-row">
-          <span class="badge ${used ? 'badge-used' : 'badge-available'}">${used ? dict.used : dict.available}</span>
-          <span class="badge badge-cat">${catLabel}</span>
-          <span class="badge badge-area">${areaLabel}</span>
-          ${distText ? `<span class="badge badge-dist">${distText}</span>` : ""}
-        </div>
-        <h2 class="coupon-title">${text.title}</h2>
-        <p class="coupon-desc">${text.shortDesc}</p>
-      </div>
-    `;
-    list.appendChild(card);
-  });
-}
-
-function handleCouponClick(coupon) {
-  currentCoupon = coupon;
-  pendingUseConfirm = false;
-
-  if (isUnlocked()) {
-    openDetailModal();
-  } else {
-    document.getElementById("pwInput").value = "";
-    document.getElementById("pwError").style.display = "none";
-    document.getElementById("pwModal").style.display = "flex";
-    setTimeout(() => document.getElementById("pwInput").focus(), 50);
-  }
-}
-
-function checkPassword() {
-  const input = document.getElementById("pwInput").value;
-  if (input === SHARED_PASSWORD) {
-    setUnlocked();
-    closeModal("pwModal");
-    updateUnlockBadge();
-    openDetailModal();
-  } else {
-    document.getElementById("pwError").style.display = "block";
-  }
-}
-
-function openDetailModal() {
-  if (!currentCoupon) return;
-  const dict = t();
-  const text = getCouponText(currentCoupon);
-
-  pendingUseConfirm = false;
-  document.getElementById("detailImg").src = currentCoupon.image;
-  document.getElementById("detailCategory").textContent = getMetaLabel("categories", currentCoupon.category);
-  document.getElementById("detailArea").textContent = getMetaLabel("areas", currentCoupon.area);
-  document.getElementById("detailTitle").textContent = text.title;
-  document.getElementById("detailDesc").textContent = text.detailDesc;
-  document.getElementById("detailTerms").textContent = text.terms;
-
-  const used = isCouponUsed(currentCoupon.id);
-  const btn = document.getElementById("useBtn");
-
-  if (used) {
-    btn.textContent = dict.alreadyUsedBtn;
-    btn.className = "btn btn-used";
-    btn.disabled = true;
-  } else {
-    btn.textContent = dict.useBtn;
-    btn.className = "btn btn-use";
-    btn.disabled = false;
-  }
-
-  document.getElementById("detailModal").style.display = "flex";
-}
-
-function useCoupon() {
-  if (!currentCoupon || isCouponUsed(currentCoupon.id)) return;
-  const dict = t();
-  const btn = document.getElementById("useBtn");
-
-  if (!pendingUseConfirm) {
-    pendingUseConfirm = true;
-    btn.textContent = dict.confirmUseBtn;
-    return;
-  }
-
-  pendingUseConfirm = false;
-  markCouponUsed(currentCoupon.id);
-  btn.textContent = dict.alreadyUsedBtn;
-  btn.className = "btn btn-used";
-  btn.disabled = true;
-  renderCoupons();
-}
-
-function closeModal(id) {
-  document.getElementById(id).style.display = "none";
-}
-
-// 端末の言語を自動判定して初期表示を反映
-setLanguage(currentLang, false);
-</script>
-</body>
-</html>
