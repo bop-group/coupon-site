@@ -423,7 +423,7 @@
 
 <script>
 // =========================================================
-// ★共通パスワード・言語文言・クーポン一覧の設定★
+// ★共通パスワード・言語文言・クーポン一覧（日本語だけでもOK）★
 // =========================================================
 const SHARED_PASSWORD = "123"; // 全クーポン共通のパスワード
 
@@ -593,6 +593,7 @@ const I18N = {
 const CATEGORY_KEYS = ["food", "experience", "ticket"];
 const AREA_KEYS = ["shibuya", "shinjuku", "umeda"];
 
+// ★追加時は ja だけでもOK！en / zh / ko を書けば手動翻訳が優先されます
 const coupons = [
   {
     id: "coupon_1",
@@ -607,21 +608,535 @@ const coupons = [
         shortDesc: "全メニュー対象！お得な割引クーポン",
         detailDesc: "お会計時にこの画面をご提示いただくと、合計金額から20%割引いたします。",
         terms: "・有効期限：2026年12月末まで\n・他の割引との併用不可\n・お一人様1回限り有効"
-      },
-      en: {
-        title: "20% OFF Your Bill (First Visit)",
-        shortDesc: "Valid on all menu items!",
-        detailDesc: "Show this screen at checkout to receive 20% off your total bill.",
-        terms: "• Valid through Dec 31, 2026\n• Cannot be combined with other offers\n• One use per person"
-      },
-      zh: {
-        title: "【首次限定】結帳享 8 折優惠",
-        shortDesc: "全品項適用！超值折扣券",
-        detailDesc: "結帳時出示本畫面，即可享總金額 20% 折扣。",
-        terms: "・有效期限至 2026 年 12 月底\n・不得與其他優惠併用\n・每人限用一次"
-      },
-      ko: {
-        title: "【첫 방문 한정】결제 금액 20% 할인",
-        shortDesc: "전 메뉴 대상 알뜰 할인 쿠폰",
-        detailDesc: "결제 시 본 화면을 보여드리면 총 결제 금액에서 20% 할인됩니다.",
-        terms: "• 유효기간: 2026년 12월 말까지\n• 타 할인
+      }
+    }
+  },
+  {
+    id: "coupon_2",
+    category: "food",
+    area: "shinjuku",
+    lat: 35.6896,
+    lng: 139.7006,
+    image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80",
+    i18n: {
+      ja: {
+        title: "ドリンク1杯無料サービス",
+        shortDesc: "お好きなソフトドリンクを1杯プレゼント",
+        detailDesc: "お食事をご注文の方に、お好きなソフトドリンクを1杯無料でサービスいたします。",
+        terms: "・有効期限：2026年12月末まで\n・アルコール類は対象外\n・1グループ1枚まで"
+      }
+    }
+  },
+  {
+    id: "coupon_3",
+    category: "experience",
+    area: "shibuya",
+    lat: 35.6595,
+    lng: 139.7004,
+    image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=600&q=80",
+    i18n: {
+      ja: {
+        title: "ワークショップ体験 500円OFF",
+        shortDesc: "人気のものづくり体験がお得に楽しめる",
+        detailDesc: "対象の体験プログラム受付時にご提示で、参加費から500円割引いたします。",
+        terms: "・有効期限：2026年12月末まで\n・事前予約が必要な体験あり\n・お一人様1回限り有効"
+      }
+    }
+  },
+  {
+    id: "coupon_4",
+    category: "ticket",
+    area: "umeda",
+    lat: 34.7025,
+    lng: 135.4959,
+    image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=600&q=80",
+    i18n: {
+      ja: {
+        title: "施設入場料 100円引きクーポン",
+        shortDesc: "当日窓口での入場チケットが割引",
+        detailDesc: "チケット売り場で本画面をご提示いただくと、入場料を100円割引いたします。",
+        terms: "・有効期限：2026年12月末まで\n・他の優待券との併用不可\n・当日券のみ対象"
+      }
+    }
+  }
+];
+
+function detectInitialLanguage() {
+  try {
+    const savedLang = sessionStorage.getItem("selected_coupon_lang");
+    if (savedLang && I18N[savedLang]) {
+      return savedLang;
+    }
+  } catch (e) {}
+
+  const candidates = [];
+  if (Array.isArray(navigator.languages)) candidates.push(...navigator.languages);
+  if (navigator.language) candidates.push(navigator.language);
+
+  for (const raw of candidates) {
+    const code = String(raw).toLowerCase();
+    if (code.startsWith("en")) return "en";
+    if (code.startsWith("zh")) return "zh";
+    if (code.startsWith("ko")) return "ko";
+    if (code.startsWith("ja")) return "ja";
+  }
+  return "ja";
+}
+
+let currentLang = detectInitialLanguage();
+let selectedCategory = "all";
+let selectedArea = "all";
+let gpsSorted = false;
+let gpsState = "idle";
+let distanceMap = {};
+let currentCoupon = null;
+let pendingUseConfirm = false;
+
+// 自動翻訳キャッシュ（メモリ + sessionStorage）
+const autoTranslateCache = {};
+const inflightTranslations = new Set();
+
+function getApiLangCode(lang) {
+  if (lang === "en") return "en";
+  if (lang === "zh") return "zh-TW";
+  if (lang === "ko") return "ko";
+  return "ja";
+}
+
+function getCacheKey(couponId, field, lang, sourceText) {
+  return `auto_tr_${couponId}_${lang}_${field}_${sourceText}`;
+}
+
+function getCachedTranslation(couponId, field, lang, sourceText) {
+  const key = getCacheKey(couponId, field, lang, sourceText);
+  if (autoTranslateCache[key]) return autoTranslateCache[key];
+  try {
+    const val = sessionStorage.getItem(key);
+    if (val) {
+      autoTranslateCache[key] = val;
+      return val;
+    }
+  } catch (e) {}
+  return null;
+}
+
+function setCachedTranslation(couponId, field, lang, sourceText, translatedText) {
+  const key = getCacheKey(couponId, field, lang, sourceText);
+  autoTranslateCache[key] = translatedText;
+  try {
+    sessionStorage.setItem(key, translatedText);
+  } catch (e) {}
+}
+
+async function translateText(text, targetLang) {
+  if (!text || targetLang === "ja") return text;
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=ja|${encodeURIComponent(getApiLangCode(targetLang))}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Translation API failed");
+  const data = await res.json();
+  const translated = data && data.responseData && data.responseData.translatedText;
+  if (!translated || typeof translated !== "string") throw new Error("Invalid response");
+  return translated;
+}
+
+// 必要な自動翻訳をバックグラウンドで実行し、完了後に再描画する
+function ensureTranslationsForCurrentLang() {
+  if (currentLang === "ja") return;
+
+  const fields = ["title", "shortDesc", "detailDesc", "terms"];
+  let anyStarted = false;
+
+  coupons.forEach(coupon => {
+    const jaData = coupon.i18n.ja || {};
+    const manualData = coupon.i18n[currentLang] || {};
+
+    fields.forEach(field => {
+      if (manualData[field]) return; // 手動指定があればスキップ
+      const sourceText = jaData[field] || "";
+      if (!sourceText) return;
+      if (getCachedTranslation(coupon.id, field, currentLang, sourceText)) return;
+
+      const taskKey = `${coupon.id}_${field}_${currentLang}`;
+      if (inflightTranslations.has(taskKey)) return;
+
+      inflightTranslations.add(taskKey);
+      anyStarted = true;
+
+      translateText(sourceText, currentLang)
+        .then(translated => {
+          setCachedTranslation(coupon.id, field, currentLang, sourceText, translated);
+          renderCoupons();
+          if (document.getElementById("detailModal").style.display === "flex" && currentCoupon && currentCoupon.id === coupon.id) {
+            openDetailModal();
+          }
+        })
+        .catch(() => {
+          // 失敗時は日本語のまま表示を維持
+        })
+        .finally(() => {
+          inflightTranslations.delete(taskKey);
+        });
+    });
+  });
+
+  return anyStarted;
+}
+
+function t() {
+  return I18N[currentLang] || I18N.ja;
+}
+
+function getCouponText(coupon) {
+  const jaData = coupon.i18n.ja || {};
+  if (currentLang === "ja") {
+    return {
+      title: jaData.title || "",
+      shortDesc: jaData.shortDesc || "",
+      detailDesc: jaData.detailDesc || "",
+      terms: jaData.terms || ""
+    };
+  }
+
+  const manualData = coupon.i18n[currentLang] || {};
+  const resolveField = field => {
+    if (manualData[field]) return manualData[field];
+    const src = jaData[field] || "";
+    const cached = getCachedTranslation(coupon.id, field, currentLang, src);
+    return cached || src;
+  };
+
+  return {
+    title: resolveField("title"),
+    shortDesc: resolveField("shortDesc"),
+    detailDesc: resolveField("detailDesc"),
+    terms: resolveField("terms")
+  };
+}
+
+function setLanguage(lang, saveChoice = false) {
+  if (!I18N[lang]) return;
+  currentLang = lang;
+  if (saveChoice) {
+    try {
+      sessionStorage.setItem("selected_coupon_lang", lang);
+    } catch (e) {}
+  }
+
+  document.documentElement.lang = lang === "zh" ? "zh-Hant" : lang;
+  document.title = t().pageTitle;
+
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.lang === lang);
+  });
+
+  applyStaticTexts();
+  renderFilterChips();
+  renderCoupons();
+  ensureTranslationsForCurrentLang();
+
+  if (document.getElementById("detailModal").style.display === "flex" && currentCoupon) {
+    openDetailModal();
+  }
+}
+
+function applyStaticTexts() {
+  const dict = t();
+  document.getElementById("siteTitle").textContent = dict.siteTitle;
+  document.getElementById("siteSubtitle").textContent = dict.siteSubtitle;
+  document.getElementById("labelCategory").textContent = dict.labelCategory;
+  document.getElementById("labelArea").textContent = dict.labelArea;
+  document.getElementById("gpsBtn").textContent = dict.gpsBtn;
+  document.getElementById("gpsResetBtn").textContent = dict.gpsResetBtn;
+  document.getElementById("gpsResetBtn").style.display = gpsSorted ? "inline-block" : "none";
+
+  const gpsStatusEl = document.getElementById("gpsStatus");
+  if (gpsState === "loading") gpsStatusEl.textContent = dict.gpsLoading;
+  else if (gpsState === "sorted") gpsStatusEl.textContent = dict.gpsSorted;
+  else if (gpsState === "error") gpsStatusEl.textContent = dict.gpsError;
+  else if (gpsState === "unsupported") gpsStatusEl.textContent = dict.gpsUnsupported;
+  else gpsStatusEl.textContent = dict.gpsIdle;
+
+  document.getElementById("pwTitle").textContent = dict.pwTitle;
+  document.getElementById("pwDesc").textContent = dict.pwDesc;
+  document.getElementById("pwInput").placeholder = dict.pwPlaceholder;
+  document.getElementById("pwSubmitBtn").textContent = dict.pwSubmitBtn;
+  document.getElementById("pwError").textContent = dict.pwError;
+  document.getElementById("staffNote").textContent = dict.staffNote;
+
+  updateUnlockBadge();
+}
+
+function isUnlocked() {
+  try {
+    return sessionStorage.getItem("shared_coupon_unlocked") === "true";
+  } catch (e) {
+    return false;
+  }
+}
+
+function setUnlocked() {
+  try {
+    sessionStorage.setItem("shared_coupon_unlocked", "true");
+  } catch (e) {}
+}
+
+function isCouponUsed(couponId) {
+  try {
+    return localStorage.getItem("coupon_used_" + couponId) === "true";
+  } catch (e) {
+    return false;
+  }
+}
+
+function markCouponUsed(couponId) {
+  try {
+    localStorage.setItem("coupon_used_" + couponId, "true");
+  } catch (e) {}
+}
+
+function updateUnlockBadge() {
+  const badge = document.getElementById("unlockStatus");
+  if (isUnlocked()) {
+    badge.textContent = t().unlockedStatus;
+    badge.className = "status-bar unlocked";
+  } else {
+    badge.textContent = t().lockedStatus;
+    badge.className = "status-bar";
+  }
+}
+
+function renderFilterChips() {
+  const dict = t();
+  const catBar = document.getElementById("categoryBar");
+  catBar.innerHTML = "";
+
+  const catOptions = [{ key: "all", label: dict.allCategories }].concat(
+    CATEGORY_KEYS.map(k => ({ key: k, label: dict.categories[k] || k }))
+  );
+  catOptions.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "chip-btn" + (selectedCategory === opt.key ? " active" : "");
+    btn.textContent = opt.label;
+    btn.onclick = () => {
+      selectedCategory = opt.key;
+      renderFilterChips();
+      renderCoupons();
+    };
+    catBar.appendChild(btn);
+  });
+
+  const areaBar = document.getElementById("areaBar");
+  areaBar.innerHTML = "";
+
+  const areaOptions = [{ key: "all", label: dict.allAreas }].concat(
+    AREA_KEYS.map(k => ({ key: k, label: dict.areas[k] || k }))
+  );
+  areaOptions.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "chip-btn" + (selectedArea === opt.key ? " active" : "");
+    btn.textContent = opt.label;
+    btn.onclick = () => {
+      selectedArea = opt.key;
+      renderFilterChips();
+      renderCoupons();
+    };
+    areaBar.appendChild(btn);
+  });
+}
+
+function calcDistanceKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const toRad = deg => deg * Math.PI / 180;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function sortByGPS() {
+  if (!navigator.geolocation) {
+    gpsState = "unsupported";
+    applyStaticTexts();
+    return;
+  }
+
+  gpsState = "loading";
+  applyStaticTexts();
+
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      const { latitude, longitude } = pos.coords;
+      distanceMap = {};
+      coupons.forEach(c => {
+        if (typeof c.lat === "number" && typeof c.lng === "number") {
+          distanceMap[c.id] = calcDistanceKm(latitude, longitude, c.lat, c.lng);
+        }
+      });
+      gpsSorted = true;
+      gpsState = "sorted";
+      applyStaticTexts();
+      renderCoupons();
+    },
+    () => {
+      gpsState = "error";
+      applyStaticTexts();
+    },
+    { enableHighAccuracy: false, timeout: 8000 }
+  );
+}
+
+function resetGPS() {
+  gpsSorted = false;
+  gpsState = "idle";
+  distanceMap = {};
+  applyStaticTexts();
+  renderCoupons();
+}
+
+function formatDistance(km) {
+  if (typeof km !== "number") return "";
+  if (km < 1) return `${Math.round(km * 1000)}m`;
+  return `${km.toFixed(1)}km`;
+}
+
+function renderCoupons() {
+  const dict = t();
+  const list = document.getElementById("couponList");
+  list.innerHTML = "";
+
+  let filtered = coupons.filter(c => {
+    const matchCat = selectedCategory === "all" || c.category === selectedCategory;
+    const matchArea = selectedArea === "all" || c.area === selectedArea;
+    return matchCat && matchArea;
+  });
+
+  if (gpsSorted) {
+    filtered = [...filtered].sort((a, b) => {
+      const da = typeof distanceMap[a.id] === "number" ? distanceMap[a.id] : Infinity;
+      const db = typeof distanceMap[b.id] === "number" ? distanceMap[b.id] : Infinity;
+      return da - db;
+    });
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty-msg">${dict.empty}</div>`;
+    return;
+  }
+
+  filtered.forEach(c => {
+    const text = getCouponText(c);
+    const used = isCouponUsed(c.id);
+    const distText = gpsSorted ? formatDistance(distanceMap[c.id]) : "";
+    const catLabel = dict.categories[c.category] || c.category;
+    const areaLabel = dict.areas[c.area] || c.area;
+
+    const card = document.createElement("div");
+    card.className = "coupon-card";
+    card.onclick = () => handleCouponClick(c);
+
+    card.innerHTML = `
+      <img src="${c.image}" alt="${text.title}">
+      <div class="coupon-info">
+        <div class="meta-row">
+          <span class="badge ${used ? 'badge-used' : 'badge-available'}">${used ? dict.used : dict.available}</span>
+          <span class="badge badge-cat">${catLabel}</span>
+          <span class="badge badge-area">${areaLabel}</span>
+          ${distText ? `<span class="badge badge-dist">${distText}</span>` : ""}
+        </div>
+        <h2 class="coupon-title">${text.title}</h2>
+        <p class="coupon-desc">${text.shortDesc}</p>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+}
+
+function handleCouponClick(coupon) {
+  currentCoupon = coupon;
+  pendingUseConfirm = false;
+
+  if (isUnlocked()) {
+    openDetailModal();
+  } else {
+    document.getElementById("pwInput").value = "";
+    document.getElementById("pwError").style.display = "none";
+    document.getElementById("pwModal").style.display = "flex";
+    setTimeout(() => document.getElementById("pwInput").focus(), 50);
+  }
+}
+
+function checkPassword() {
+  const input = document.getElementById("pwInput").value;
+  if (input === SHARED_PASSWORD) {
+    setUnlocked();
+    closeModal("pwModal");
+    updateUnlockBadge();
+    openDetailModal();
+  } else {
+    document.getElementById("pwError").style.display = "block";
+  }
+}
+
+function openDetailModal() {
+  if (!currentCoupon) return;
+  const dict = t();
+  const text = getCouponText(currentCoupon);
+
+  pendingUseConfirm = false;
+  document.getElementById("detailImg").src = currentCoupon.image;
+  document.getElementById("detailCategory").textContent = dict.categories[currentCoupon.category] || currentCoupon.category;
+  document.getElementById("detailArea").textContent = dict.areas[currentCoupon.area] || currentCoupon.area;
+  document.getElementById("detailTitle").textContent = text.title;
+  document.getElementById("detailDesc").textContent = text.detailDesc;
+  document.getElementById("detailTerms").textContent = text.terms;
+
+  const used = isCouponUsed(currentCoupon.id);
+  const btn = document.getElementById("useBtn");
+
+  if (used) {
+    btn.textContent = dict.alreadyUsedBtn;
+    btn.className = "btn btn-used";
+    btn.disabled = true;
+  } else {
+    btn.textContent = dict.useBtn;
+    btn.className = "btn btn-use";
+    btn.disabled = false;
+  }
+
+  document.getElementById("detailModal").style.display = "flex";
+}
+
+function useCoupon() {
+  if (!currentCoupon || isCouponUsed(currentCoupon.id)) return;
+  const dict = t();
+  const btn = document.getElementById("useBtn");
+
+  if (!pendingUseConfirm) {
+    pendingUseConfirm = true;
+    btn.textContent = dict.confirmUseBtn;
+    return;
+  }
+
+  pendingUseConfirm = false;
+  markCouponUsed(currentCoupon.id);
+  btn.textContent = dict.alreadyUsedBtn;
+  btn.className = "btn btn-used";
+  btn.disabled = true;
+  renderCoupons();
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = "none";
+}
+
+// 端末の言語を自動判定して初期表示を反映
+setLanguage(currentLang, false);
+</script>
+</body>
+</html>
