@@ -66,7 +66,8 @@
     font-size: 13px;
     color: var(--muted);
     margin: 0;
-    line-height: 1.5;
+    line-height: 1.6;
+    white-space: pre-line;
   }
   .status-bar {
     display: inline-block;
@@ -431,7 +432,7 @@ const I18N = {
   ja: {
     pageTitle: "限定クーポン一覧",
     siteTitle: "🎁 限定クーポン一覧",
-    siteSubtitle: "言語・カテゴリ・エリアで絞り込めます。クーポンをタップしてパスワードを入力すると詳細が開きます。",
+    siteSubtitle: "言語・カテゴリ・エリアで絞り込めます。クーポンをタップしてパスワードを入力すると詳細が開きます。\nパスワードはJAPAN QUALITY SIM を購入後、メール本文に記載しております。",
     lockedStatus: "🔒 パスワード未解除",
     unlockedStatus: "🔓 パスワード解除済み（全クーポン利用可能）",
     labelCategory: "カテゴリ",
@@ -471,7 +472,7 @@ const I18N = {
   en: {
     pageTitle: "Exclusive Coupons",
     siteTitle: "🎁 Exclusive Coupons",
-    siteSubtitle: "Filter by language, category, or area. Tap a coupon and enter the password to view details.",
+    siteSubtitle: "Filter by language, category, or area. Tap a coupon and enter the password to view details.\nThe password is included in your email after purchasing JAPAN QUALITY SIM.",
     lockedStatus: "🔒 Locked",
     unlockedStatus: "🔓 Unlocked (All coupons available)",
     labelCategory: "Category",
@@ -511,7 +512,7 @@ const I18N = {
   zh: {
     pageTitle: "精選優惠券一覽",
     siteTitle: "🎁 精選優惠券一覽",
-    siteSubtitle: "可依語言、類別與地區篩選。點擊優惠券並輸入密碼即可查看詳情。",
+    siteSubtitle: "可依語言、類別與地區篩選。點擊優惠券並輸入密碼即可查看詳情。\n密碼已記載於購買 JAPAN QUALITY SIM 後的電子郵件內文中。",
     lockedStatus: "🔒 尚未解鎖",
     unlockedStatus: "🔓 已解鎖（所有優惠券皆可使用）",
     labelCategory: "類別",
@@ -551,7 +552,7 @@ const I18N = {
   ko: {
     pageTitle: "한정 쿠폰 모음",
     siteTitle: "🎁 한정 쿠폰 모음",
-    siteSubtitle: "언어, 카테고리, 지역별로 필터링할 수 있습니다. 쿠폰을 탭하고 비밀번호를 입력하세요.",
+    siteSubtitle: "언어, 카테고리, 지역별로 필터링할 수 있습니다. 쿠폰을 탭하고 비밀번호를 입력하세요.\n비밀번호는 JAPAN QUALITY SIM 구매 후 발송되는 이메일 본문에 기재되어 있습니다.",
     lockedStatus: "🔒 잠금 상태",
     unlockedStatus: "🔓 잠금 해제됨 (모든 쿠폰 이용 가능)",
     labelCategory: "카테고리",
@@ -751,7 +752,7 @@ function ensureTranslationsForCurrentLang() {
     const manualData = coupon.i18n[currentLang] || {};
 
     fields.forEach(field => {
-      if (manualData[field]) return; // 手動指定があればスキップ
+      if (manualData[field]) return;
       const sourceText = jaData[field] || "";
       if (!sourceText) return;
       if (getCachedTranslation(coupon.id, field, currentLang, sourceText)) return;
@@ -770,9 +771,7 @@ function ensureTranslationsForCurrentLang() {
             openDetailModal();
           }
         })
-        .catch(() => {
-          // 失敗時は日本語のまま表示を維持
-        })
+        .catch(() => {})
         .finally(() => {
           inflightTranslations.delete(taskKey);
         });
