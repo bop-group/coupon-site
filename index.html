@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>限定クーポン一覧</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 16px;
+    color: #222;
+  }
+  .header {
+    text-align: center;
+    margin: 8px auto 22px;
+    max-width: 700px;
+  }
+  .header h1 {
+    font-size: 21px;
+    margin: 0 0 6px 0;
+  }
+  .header p {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+  }
+  .status-bar {
+    display: inline-block;
+    margin-top: 8px;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: #e9ecef;
+    color: #495057;
+  }
+  .status-bar.unlocked {
+    background: #d4edda;
+    color: #155724;
+    font-weight: bold;
+  }
+  /* クーポン一覧グリッド */
+  .coupon-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    gap: 16px;
+    max-width: 920px;
+    margin: 0 auto;
+  }
+  .coupon-card {
+    background: #fff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.07);
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
+  }
+  .coupon-card:hover {
+    box-shadow: 0 6px 16px rgba(0,0,0,0.11);
+  }
+  .coupon-card:active {
+    transform: scale(0.98);
+  }
+  .coupon-card img {
+    width: 100%;
+    height: 160px;
+    object-fit: cover;
+    display: block;
+    background: #e9ecef;
+  }
+  .coupon-info {
+    padding: 14px 16px 16px;
+    flex: 1;
+  }
+  .coupon-badge {
+    display: inline-block;
+    background: #ff4d4f;
+    color: #fff;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 5px;
+    margin-bottom: 7px;
+  }
+  .coupon-badge.used {
+    background: #8c8c8c;
+  }
+  .coupon-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 0 0 6px 0;
+    line-height: 1.4;
+  }
+  .coupon-desc {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+  }
+  /* モーダル */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+  .modal-box {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 410px;
+    padding: 24px 20px;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.22);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    font-size: 26px;
+    line-height: 1;
+    color: #888;
+    cursor: pointer;
+    border: none;
+    background: none;
+  }
+  .pw-input {
+    width: 82%;
+    padding: 11px;
+    font-size: 16px;
+    border: 2px solid #d9d9d9;
+    border-radius: 8px;
+    margin: 12px 0;
+    text-align: center;
+    box-sizing: border-box;
+  }
+  .pw-input:focus {
+    outline: none;
+    border-color: #1677ff;
+  }
+  .btn {
+    background: #1677ff;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    font-size: 15px;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 86%;
+  }
+  .btn:hover {
+    opacity: 0.93;
+  }
+  .btn-use {
+    background: #ff4d4f;
+    margin-top: 16px;
+  }
+  .btn-used {
+    background: #bfbfbf;
+    cursor: not-allowed;
+    margin-top: 16px;
+  }
+  .error-msg {
+    color: #cf1322;
+    font-size: 13px;
+    margin-top: 8px;
+    display: none;
+  }
+  .detail-img {
+    width: 100%;
+    height: 155px;
+    object-fit: cover;
+    border-radius: 10px;
+    margin-bottom: 12px;
+    background: #e9ecef;
+  }
+  .detail-terms {
+    background: #f6f7f9;
+    padding: 11px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #555;
+    text-align: left;
+    margin-top: 12px;
+    white-space: pre-line;
+    line-height: 1.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🎁 限定クーポン一覧</h1>
+  <p>クーポンをタップしてパスワードを入力すると詳細が表示されます</p>
+  <div id="unlockStatus" class="status-bar">🔒 パスワード未解除</div>
+</div>
+
+<div class="coupon-grid" id="couponList"></div>
+
+<!-- パスワード入力モーダル -->
+<div class="modal-overlay" id="pwModal">
+  <div class="modal-box">
+    <button class="close-btn" onclick="closeModal('pwModal')" aria-label="閉じる">&times;</button>
+    <h3 style="margin-top:0;">パスワード入力</h3>
+    <p style="font-size:13px; color:#666; margin-bottom:4px;">一度入力すると、他のクーポンも解除されます</p>
+    <input type="password" id="pwInput" class="pw-input" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter') checkPassword()">
+    <br>
+    <button class="btn" onclick="checkPassword()">ロックを解除する</button>
+    <p class="error-msg" id="pwError">パスワードが正しくありません</p>
+  </div>
+</div>
+
+<!-- クーポン詳細・利用モーダル -->
+<div class="modal-overlay" id="detailModal">
+  <div class="modal-box">
+    <button class="close-btn" onclick="closeModal('detailModal')" aria-label="閉じる">&times;</button>
+    <img id="detailImg" class="detail-img" src="" alt="">
+    <h3 id="detailTitle" style="margin:0 0 8px 0; font-size:18px;"></h3>
+    <p id="detailDesc" style="font-size:14px; color:#333; margin:0; line-height:1.6;"></p>
+    <div class="detail-terms" id="detailTerms"></div>
+    <button id="useBtn" class="btn btn-use" onclick="useCoupon()">クーポンを使用する（スタッフ提示）</button>
+    <p style="font-size:11px; color:#888; margin-top:8px;">※お会計時にスタッフへこの画面をお見せください</p>
+  </div>
+</div>
+
+<script>
+// =========================================================
+// ★ここを書き換えてパスワードやクーポンを編集してください★
+// =========================================================
+const SHARED_PASSWORD = "123"; // 全クーポン共通のパスワード
+
+const coupons = [
+  {
+    id: "coupon_1",
+    title: "【初回限定】お会計から20%OFF",
+    shortDesc: "全メニュー対象！お得な割引クーポン",
+    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80",
+    detailDesc: "お会計時にこの画面をご提示いただくと、合計金額から20%割引いたします。",
+    terms: "・有効期限：2026年12月末まで\n・他の割引との併用不可\n・お一人様1回限り有効"
+  },
+  {
+    id: "coupon_2",
+    title: "ドリンク1杯無料サービス",
+    shortDesc: "お好きなソフトドリンクを1杯プレゼント",
+    image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80",
+    detailDesc: "お食事をご注文の方に、お好きなソフトドリンクを1杯無料でサービスいたします。",
+    terms: "・有効期限：2026年12月末まで\n・アルコール類は対象外\n・1グループ1枚まで"
+  },
+  {
+    id: "coupon_3",
+    title: "特製デザートプレゼント",
+    shortDesc: "食後の季節限定スイーツが無料！",
+    image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=600&q=80",
+    detailDesc: "ディナータイムにご来店のお客様限定で、本日の特製デザートをプレゼント！",
+    terms: "・17:00以降のご来店限定\n・なくなり次第終了"
+  }
+];
+
+let currentCoupon = null;
+
+function isUnlocked() {
+  return sessionStorage.getItem("shared_coupon_unlocked") === "true";
+}
+
+function updateUnlockBadge() {
+  const badge = document.getElementById("unlockStatus");
+  if (isUnlocked()) {
+    badge.textContent = "🔓 パスワード解除済み（全クーポン利用可能）";
+    badge.className = "status-bar unlocked";
+  } else {
+    badge.textContent = "🔒 パスワード未解除";
+    badge.className = "status-bar";
+  }
+}
+
+function renderCoupons() {
+  const list = document.getElementById("couponList");
+  list.innerHTML = "";
+
+  coupons.forEach(c => {
+    const isUsed = localStorage.getItem("coupon_used_" + c.id) === "true";
+    const card = document.createElement("div");
+    card.className = "coupon-card";
+    card.onclick = () => handleCouponClick(c);
+
+    card.innerHTML = `
+      <img src="${c.image}" alt="${c.title}">
+      <div class="coupon-info">
+        <span class="coupon-badge ${isUsed ? 'used' : ''}">${isUsed ? '使用済み' : '利用可能'}</span>
+        <h2 class="coupon-title">${c.title}</h2>
+        <p class="coupon-desc">${c.shortDesc}</p>
+      </div>
+    `;
+    list.appendChild(card);
+  });
+
+  updateUnlockBadge();
+}
+
+function handleCouponClick(coupon) {
+  currentCoupon = coupon;
+  if (isUnlocked()) {
+    openDetailModal();
+  } else {
+    document.getElementById("pwInput").value = "";
+    document.getElementById("pwError").style.display = "none";
+    document.getElementById("pwModal").style.display = "flex";
+    setTimeout(() => document.getElementById("pwInput").focus(), 50);
+  }
+}
+
+function checkPassword() {
+  const input = document.getElementById("pwInput").value;
+  if (input === SHARED_PASSWORD) {
+    sessionStorage.setItem("shared_coupon_unlocked", "true");
+    closeModal("pwModal");
+    updateUnlockBadge();
+    openDetailModal();
+  } else {
+    document.getElementById("pwError").style.display = "block";
+  }
+}
+
+function openDetailModal() {
+  document.getElementById("detailImg").src = currentCoupon.image;
+  document.getElementById("detailTitle").innerText = currentCoupon.title;
+  document.getElementById("detailDesc").innerText = currentCoupon.detailDesc;
+  document.getElementById("detailTerms").innerText = currentCoupon.terms;
+
+  const isUsed = localStorage.getItem("coupon_used_" + currentCoupon.id) === "true";
+  const btn = document.getElementById("useBtn");
+
+  if (isUsed) {
+    btn.innerText = "このクーポンは使用済みです";
+    btn.className = "btn btn-used";
+    btn.disabled = true;
+  } else {
+    btn.innerText = "クーポンを使用する（スタッフ提示）";
+    btn.className = "btn btn-use";
+    btn.disabled = false;
+  }
+
+  document.getElementById("detailModal").style.display = "flex";
+}
+
+function useCoupon() {
+  if (!currentCoupon) return;
+  if (confirm("このクーポンを「使用済み」にしますか？\n※一度使用済みにすると元に戻せません。")) {
+    localStorage.setItem("coupon_used_" + currentCoupon.id, "true");
+    openDetailModal();
+    renderCoupons();
+  }
+}
+
+function closeModal(id) {
+  document.getElementById(id).style.display = "none";
+}
+
+renderCoupons();
+</script>
+</body>
+</html>
