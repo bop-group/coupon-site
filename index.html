@@ -277,10 +277,10 @@ function isUnlocked() {
 function updateUnlockBadge() {
   const badge = document.getElementById("unlockStatus");
   if (isUnlocked()) {
-    badge.textContent = "🔓 パスワード解除済み（全クーポン利用可能）";
+    badge.textContent = "🔓 Password unlocked. All coupons are now available.";
     badge.className = "status-bar unlocked";
   } else {
-    badge.textContent = "🔒 パスワード未解除";
+    badge.textContent = "🔒 Password locked ";
     badge.className = "status-bar";
   }
 }
@@ -298,7 +298,7 @@ function renderCoupons() {
     card.innerHTML = `
       <img src="${c.image}" alt="${c.title}">
       <div class="coupon-info">
-        <span class="coupon-badge ${isUsed ? 'used' : ''}">${isUsed ? '使用済み' : '利用可能'}</span>
+        <span class="coupon-badge ${isUsed ? 'used' : ''}">${isUsed ? 'Used' : 'Available to use / Valid'}</span>
         <h2 class="coupon-title">${c.title}</h2>
         <p class="coupon-desc">${c.shortDesc}</p>
       </div>
@@ -343,11 +343,11 @@ function openDetailModal() {
   const btn = document.getElementById("useBtn");
 
   if (isUsed) {
-    btn.innerText = "このクーポンは使用済みです";
+    btn.innerText = "This coupon is used.";
     btn.className = "btn btn-used";
     btn.disabled = true;
   } else {
-    btn.innerText = "クーポンを使用する（スタッフ提示）";
+    btn.innerText = "Use coupon (Please show this screen to staff.)";
     btn.className = "btn btn-use";
     btn.disabled = false;
   }
@@ -357,7 +357,7 @@ function openDetailModal() {
 
 function useCoupon() {
   if (!currentCoupon) return;
-  if (confirm("このクーポンを「使用済み」にしますか？\n※一度使用済みにすると元に戻せません。")) {
+  if (confirm("Do you want to mark this coupon as used?\n※Once you mark this coupon as used, this action cannot be undone.")) {
     localStorage.setItem("coupon_used_" + currentCoupon.id, "true");
     openDetailModal();
     renderCoupons();
