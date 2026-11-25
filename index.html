@@ -202,9 +202,9 @@
 <body>
 
 <div class="header">
-  <h1>🎁 限定クーポン一覧</h1>
-  <p>クーポンをタップしてパスワードを入力すると詳細が表示されます</p>
-  <div id="unlockStatus" class="status-bar">🔒 パスワード未解除</div>
+  <h1>🎁 Exclusive coupons</h1>
+  <p>Tap the coupon and enter the password to see the details. You can find the password in the body of the email sent after your JAPAN QUALITY SIM purchase.</p>
+  <div id="unlockStatus" class="status-bar">🔒 Password locked</div>
 </div>
 
 <div class="coupon-grid" id="couponList"></div>
@@ -212,26 +212,26 @@
 <!-- パスワード入力モーダル -->
 <div class="modal-overlay" id="pwModal">
   <div class="modal-box">
-    <button class="close-btn" onclick="closeModal('pwModal')" aria-label="閉じる">&times;</button>
-    <h3 style="margin-top:0;">パスワード入力</h3>
-    <p style="font-size:13px; color:#666; margin-bottom:4px;">一度入力すると、他のクーポンも解除されます</p>
+    <button class="close-btn" onclick="closeModal('pwModal')" aria-label="Close">&times;</button>
+    <h3 style="margin-top:0;">Enter password</h3>
+    <p style="font-size:13px; color:#666; margin-bottom:4px;">Once you enter the password, other coupons will be unlocked as well.</p>
     <input type="password" id="pwInput" class="pw-input" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter') checkPassword()">
     <br>
-    <button class="btn" onclick="checkPassword()">ロックを解除する</button>
-    <p class="error-msg" id="pwError">パスワードが正しくありません</p>
+    <button class="btn" onclick="checkPassword()">Unlock</button>
+    <p class="error-msg" id="pwError">The password you entered is incorrect. Please try again.</p>
   </div>
 </div>
 
 <!-- クーポン詳細・利用モーダル -->
 <div class="modal-overlay" id="detailModal">
   <div class="modal-box">
-    <button class="close-btn" onclick="closeModal('detailModal')" aria-label="閉じる">&times;</button>
+    <button class="close-btn" onclick="closeModal('detailModal')" aria-label="Close">&times;</button>
     <img id="detailImg" class="detail-img" src="" alt="">
     <h3 id="detailTitle" style="margin:0 0 8px 0; font-size:18px;"></h3>
     <p id="detailDesc" style="font-size:14px; color:#333; margin:0; line-height:1.6;"></p>
     <div class="detail-terms" id="detailTerms"></div>
-    <button id="useBtn" class="btn btn-use" onclick="useCoupon()">クーポンを使用する（スタッフ提示）</button>
-    <p style="font-size:11px; color:#888; margin-top:8px;">※お会計時にスタッフへこの画面をお見せください</p>
+    <button id="useBtn" class="btn btn-use" onclick="useCoupon()">Use coupon (Please show this screen to staff.)</button>
+    <p style="font-size:11px; color:#888; margin-top:8px;">※Please show this screen to a member of staff when paying.</p>
   </div>
 </div>
 
@@ -239,7 +239,7 @@
 // =========================================================
 // ★ここを書き換えてパスワードやクーポンを編集してください★
 // =========================================================
-const SHARED_PASSWORD = "123"; // 全クーポン共通のパスワード
+const SHARED_PASSWORD = "0710"; // 全クーポン共通のパスワード
 
 const coupons = [
   {
