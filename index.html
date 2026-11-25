@@ -424,7 +424,7 @@
 
 <script>
 // =========================================================
-// ★共通パスワード・言語文言・クーポン一覧（日本語だけでもOK）★
+// ★すべて日本語（ja）を追加・変更するだけで他言語へ自動翻訳されます★
 // =========================================================
 const SHARED_PASSWORD = "123"; // 全クーポン共通のパスワード
 
@@ -498,16 +498,8 @@ const I18N = {
     confirmUseBtn: "Mark as used? Tap again to confirm",
     alreadyUsedBtn: "Already Used",
     staffNote: "* Please show this screen to staff at checkout",
-    categories: {
-      food: "Dining",
-      experience: "Activities",
-      ticket: "Admission"
-    },
-    areas: {
-      shibuya: "Tokyo / Shibuya",
-      shinjuku: "Tokyo / Shinjuku",
-      umeda: "Osaka / Umeda"
-    }
+    categories: {},
+    areas: {}
   },
   zh: {
     pageTitle: "精選優惠券一覽",
@@ -538,16 +530,8 @@ const I18N = {
     confirmUseBtn: "確定要標記為已使用嗎？請再點一次確認",
     alreadyUsedBtn: "此優惠券已使用",
     staffNote: "※ 結帳時請向店員出示此畫面",
-    categories: {
-      food: "餐飲美食",
-      experience: "體驗行程",
-      ticket: "門票優惠"
-    },
-    areas: {
-      shibuya: "東京・澀谷",
-      shinjuku: "東京・新宿",
-      umeda: "大阪・梅田"
-    }
+    categories: {},
+    areas: {}
   },
   ko: {
     pageTitle: "한정 쿠폰 모음",
@@ -578,16 +562,8 @@ const I18N = {
     confirmUseBtn: "사용 완료로 처리할까요? 한 번 더 탭하면 확정됩니다",
     alreadyUsedBtn: "이미 사용한 쿠폰입니다",
     staffNote: "* 결제 시 직원에게 이 화면을 보여주세요",
-    categories: {
-      food: "맛집·음식점",
-      experience: "체험·액티비티",
-      ticket: "입장권"
-    },
-    areas: {
-      shibuya: "도쿄·시부야",
-      shinjuku: "도쿄·신주쿠",
-      umeda: "오사카·우메다"
-    }
+    categories: {},
+    areas: {}
   }
 };
 
@@ -704,12 +680,12 @@ function getApiLangCode(lang) {
   return "ja";
 }
 
-function getCacheKey(couponId, field, lang, sourceText) {
-  return `auto_tr_${couponId}_${lang}_${field}_${sourceText}`;
+function getCacheKey(scope, itemId, field, lang, sourceText) {
+  return `auto_tr_${scope}_${itemId}_${lang}_${field}_${sourceText}`;
 }
 
-function getCachedTranslation(couponId, field, lang, sourceText) {
-  const key = getCacheKey(couponId, field, lang, sourceText);
+function getCachedTranslation(scope, itemId, field, lang, sourceText) {
+  const key = getCacheKey(scope, itemId, field, lang, sourceText);
   if (autoTranslateCache[key]) return autoTranslateCache[key];
   try {
     const val = sessionStorage.getItem(key);
@@ -721,8 +697,8 @@ function getCachedTranslation(couponId, field, lang, sourceText) {
   return null;
 }
 
-function setCachedTranslation(couponId, field, lang, sourceText, translatedText) {
-  const key = getCacheKey(couponId, field, lang, sourceText);
+function setCachedTranslation(scope, itemId, field, lang, sourceText, translatedText) {
+  const key = getCacheKey(scope, itemId, field, lang, sourceText);
   autoTranslateCache[key] = translatedText;
   try {
     sessionStorage.setItem(key, translatedText);
@@ -740,13 +716,54 @@ async function translateText(text, targetLang) {
   return translated;
 }
 
-// 必要な自動翻訳をバックグラウンドで実行し、完了後に再描画する
+function queueTranslation(scope, itemId, field, sourceText, onDone) {
+  if (currentLang === "ja" || !sourceText) return;
+  if (getCachedTranslation(scope, itemId, field, currentLang, sourceText)) return;
+
+  const taskKey = `${scope}_${itemId}_${field}_${currentLang}`;
+  if (inflightTranslations.has(taskKey)) return;
+
+  inflightTranslations.add(taskKey);
+  translateText(sourceText, currentLang)
+    .then(translated => {
+      setCachedTranslation(scope, itemId, field, currentLang, sourceText, translated);
+      if (typeof onDone === "function") onDone();
+    })
+    .catch(() => {})
+    .finally(() => {
+      inflightTranslations.delete(taskKey);
+    });
+}
+
+function getMetaLabel(type, key) {
+  const jaMap = (I18N.ja && I18N.ja[type]) || {};
+  const jaText = jaMap[key] || key;
+  if (currentLang === "ja") return jaText;
+
+  const langMap = (I18N[currentLang] && I18N[currentLang][type]) || {};
+  if (langMap[key]) return langMap[key];
+
+  const cached = getCachedTranslation(type, key, "label", currentLang, jaText);
+  if (cached) return cached;
+
+  queueTranslation(type, key, "label", jaText, () => {
+    renderFilterChips();
+    renderCoupons();
+    if (document.getElementById("detailModal").style.display === "flex" && currentCoupon) {
+      openDetailModal();
+    }
+  });
+
+  return jaText;
+}
+
 function ensureTranslationsForCurrentLang() {
   if (currentLang === "ja") return;
 
-  const fields = ["title", "shortDesc", "detailDesc", "terms"];
-  let anyStarted = false;
+  CATEGORY_KEYS.forEach(k => getMetaLabel("categories", k));
+  AREA_KEYS.forEach(k => getMetaLabel("areas", k));
 
+  const fields = ["title", "shortDesc", "detailDesc", "terms"];
   coupons.forEach(coupon => {
     const jaData = coupon.i18n.ja || {};
     const manualData = coupon.i18n[currentLang] || {};
@@ -755,30 +772,15 @@ function ensureTranslationsForCurrentLang() {
       if (manualData[field]) return;
       const sourceText = jaData[field] || "";
       if (!sourceText) return;
-      if (getCachedTranslation(coupon.id, field, currentLang, sourceText)) return;
 
-      const taskKey = `${coupon.id}_${field}_${currentLang}`;
-      if (inflightTranslations.has(taskKey)) return;
-
-      inflightTranslations.add(taskKey);
-      anyStarted = true;
-
-      translateText(sourceText, currentLang)
-        .then(translated => {
-          setCachedTranslation(coupon.id, field, currentLang, sourceText, translated);
-          renderCoupons();
-          if (document.getElementById("detailModal").style.display === "flex" && currentCoupon && currentCoupon.id === coupon.id) {
-            openDetailModal();
-          }
-        })
-        .catch(() => {})
-        .finally(() => {
-          inflightTranslations.delete(taskKey);
-        });
+      queueTranslation("coupon", coupon.id, field, sourceText, () => {
+        renderCoupons();
+        if (document.getElementById("detailModal").style.display === "flex" && currentCoupon && currentCoupon.id === coupon.id) {
+          openDetailModal();
+        }
+      });
     });
   });
-
-  return anyStarted;
 }
 
 function t() {
@@ -800,7 +802,7 @@ function getCouponText(coupon) {
   const resolveField = field => {
     if (manualData[field]) return manualData[field];
     const src = jaData[field] || "";
-    const cached = getCachedTranslation(coupon.id, field, currentLang, src);
+    const cached = getCachedTranslation("coupon", coupon.id, field, currentLang, src);
     return cached || src;
   };
 
@@ -910,7 +912,7 @@ function renderFilterChips() {
   catBar.innerHTML = "";
 
   const catOptions = [{ key: "all", label: dict.allCategories }].concat(
-    CATEGORY_KEYS.map(k => ({ key: k, label: dict.categories[k] || k }))
+    CATEGORY_KEYS.map(k => ({ key: k, label: getMetaLabel("categories", k) }))
   );
   catOptions.forEach(opt => {
     const btn = document.createElement("button");
@@ -929,7 +931,7 @@ function renderFilterChips() {
   areaBar.innerHTML = "";
 
   const areaOptions = [{ key: "all", label: dict.allAreas }].concat(
-    AREA_KEYS.map(k => ({ key: k, label: dict.areas[k] || k }))
+    AREA_KEYS.map(k => ({ key: k, label: getMetaLabel("areas", k) }))
   );
   areaOptions.forEach(opt => {
     const btn = document.createElement("button");
@@ -1032,8 +1034,8 @@ function renderCoupons() {
     const text = getCouponText(c);
     const used = isCouponUsed(c.id);
     const distText = gpsSorted ? formatDistance(distanceMap[c.id]) : "";
-    const catLabel = dict.categories[c.category] || c.category;
-    const areaLabel = dict.areas[c.area] || c.area;
+    const catLabel = getMetaLabel("categories", c.category);
+    const areaLabel = getMetaLabel("areas", c.area);
 
     const card = document.createElement("div");
     card.className = "coupon-card";
@@ -1089,8 +1091,8 @@ function openDetailModal() {
 
   pendingUseConfirm = false;
   document.getElementById("detailImg").src = currentCoupon.image;
-  document.getElementById("detailCategory").textContent = dict.categories[currentCoupon.category] || currentCoupon.category;
-  document.getElementById("detailArea").textContent = dict.areas[currentCoupon.area] || currentCoupon.area;
+  document.getElementById("detailCategory").textContent = getMetaLabel("categories", currentCoupon.category);
+  document.getElementById("detailArea").textContent = getMetaLabel("areas", currentCoupon.area);
   document.getElementById("detailTitle").textContent = text.title;
   document.getElementById("detailDesc").textContent = text.detailDesc;
   document.getElementById("detailTerms").textContent = text.terms;
