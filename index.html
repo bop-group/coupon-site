@@ -3,34 +3,76 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Exclusive coupons</title>
+<title>Special Coupons</title>
 <style>
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", sans-serif;
-    background-color: #f4f6f9;
-    margin: 0;
-    padding: 16px;
-    color: #222;
+  :root {
+    --bg: #f4f6f9;
+    --card: #ffffff;
+    --text: #222222;
+    --muted: #666666;
+    --primary: #1677ff;
+    --danger: #ff4d4f;
+    --border: #d9dfe6;
   }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", "Noto Sans CJK JP", "Noto Sans CJK TC", "Noto Sans CJK KR", sans-serif;
+    background-color: var(--bg);
+    margin: 0;
+    padding: 14px 14px 44px;
+    color: var(--text);
+  }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+
+  /* 言語切り替えバー */
+  .lang-bar {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+  .lang-btn {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    padding: 6px 11px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .lang-btn.active {
+    background: #1f2937;
+    color: #fff;
+    border-color: #1f2937;
+  }
+
   .header {
     text-align: center;
-    margin: 8px auto 22px;
-    max-width: 700px;
+    margin: 4px auto 18px;
+    max-width: 780px;
   }
   .header h1 {
-    font-size: 21px;
-    margin: 0 0 6px 0;
+    font-size: 22px;
+    margin: 0 0 6px;
   }
   .header p {
     font-size: 13px;
-    color: #666;
+    color: var(--muted);
     margin: 0;
+    line-height: 1.5;
   }
   .status-bar {
     display: inline-block;
-    margin-top: 8px;
+    margin-top: 10px;
     font-size: 12px;
-    padding: 4px 10px;
+    padding: 5px 12px;
     border-radius: 999px;
     background: #e9ecef;
     color: #495057;
@@ -40,16 +82,98 @@
     color: #155724;
     font-weight: bold;
   }
+
+  /* 絞り込み・GPSコントロールパネル */
+  .filter-panel {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 14px 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+  }
+  .filter-group {
+    margin-bottom: 12px;
+  }
+  .filter-group:last-child {
+    margin-bottom: 0;
+  }
+  .filter-label {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--muted);
+    margin-bottom: 6px;
+    display: block;
+  }
+  .chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .chip-btn {
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--text);
+    padding: 7px 13px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chip-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+  .chip-btn.active {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+  }
+  .gps-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid #eef1f5;
+  }
+  .gps-btn {
+    background: #0f766e;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .gps-btn:hover {
+    opacity: 0.92;
+  }
+  .gps-reset-btn {
+    background: #eef1f5;
+    color: #333;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .gps-status {
+    font-size: 12px;
+    color: var(--muted);
+  }
+
   /* クーポン一覧グリッド */
   .coupon-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
     gap: 16px;
-    max-width: 920px;
-    margin: 0 auto;
   }
   .coupon-card {
-    background: #fff;
+    background: var(--card);
     border-radius: 14px;
     overflow: hidden;
     box-shadow: 0 3px 10px rgba(0,0,0,0.07);
@@ -75,31 +199,61 @@
     padding: 14px 16px 16px;
     flex: 1;
   }
-  .coupon-badge {
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .badge {
     display: inline-block;
-    background: #ff4d4f;
-    color: #fff;
     font-size: 11px;
     font-weight: bold;
     padding: 3px 8px;
     border-radius: 5px;
-    margin-bottom: 7px;
   }
-  .coupon-badge.used {
+  .badge-available {
+    background: var(--danger);
+    color: #fff;
+  }
+  .badge-used {
     background: #8c8c8c;
+    color: #fff;
+  }
+  .badge-cat {
+    background: #eef4ff;
+    color: var(--primary);
+  }
+  .badge-area {
+    background: #f0fdf4;
+    color: #15803d;
+  }
+  .badge-dist {
+    background: #fff7ed;
+    color: #c2410c;
   }
   .coupon-title {
     font-size: 16px;
     font-weight: bold;
-    margin: 0 0 6px 0;
+    margin: 0 0 6px;
     line-height: 1.4;
   }
   .coupon-desc {
     font-size: 13px;
-    color: #666;
+    color: var(--muted);
     margin: 0;
     line-height: 1.5;
   }
+  .empty-msg {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 34px 16px;
+    background: var(--card);
+    border-radius: 12px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
   /* モーダル */
   .modal-overlay {
     display: none;
@@ -110,13 +264,12 @@
     align-items: center;
     z-index: 1000;
     padding: 16px;
-    box-sizing: border-box;
   }
   .modal-box {
-    background: #fff;
+    background: var(--card);
     border-radius: 16px;
     width: 100%;
-    max-width: 410px;
+    max-width: 420px;
     padding: 24px 20px;
     text-align: center;
     position: relative;
@@ -136,35 +289,34 @@
     background: none;
   }
   .pw-input {
-    width: 82%;
+    width: 84%;
     padding: 11px;
     font-size: 16px;
     border: 2px solid #d9d9d9;
     border-radius: 8px;
     margin: 12px 0;
     text-align: center;
-    box-sizing: border-box;
   }
   .pw-input:focus {
     outline: none;
-    border-color: #1677ff;
+    border-color: var(--primary);
   }
   .btn {
-    background: #1677ff;
+    background: var(--primary);
     color: #fff;
     border: none;
-    padding: 12px 20px;
-    font-size: 15px;
+    padding: 12px 18px;
+    font-size: 14px;
     font-weight: bold;
     border-radius: 8px;
     cursor: pointer;
-    width: 86%;
+    width: 90%;
   }
   .btn:hover {
     opacity: 0.93;
   }
   .btn-use {
-    background: #ff4d4f;
+    background: var(--danger);
     margin-top: 16px;
   }
   .btn-used {
@@ -201,24 +353,54 @@
 </head>
 <body>
 
-<div class="header">
-  <h1>🎁 Exclusive coupons 🎁</h1>
-  <p>Tap the coupon and enter the password to see the details. You can find the password in the body of the email sent after your JAPAN QUALITY SIM purchase.</p>
-  <div id="unlockStatus" class="status-bar">🔒 Password locked</div>
-</div>
+<div class="container">
+  <!-- 言語切り替え -->
+  <div class="lang-bar" id="langBar">
+    <button type="button" class="lang-btn" data-lang="ja" onclick="setLanguage('ja', true)">日本語</button>
+    <button type="button" class="lang-btn" data-lang="en" onclick="setLanguage('en', true)">English</button>
+    <button type="button" class="lang-btn" data-lang="zh" onclick="setLanguage('zh', true)">繁體中文</button>
+    <button type="button" class="lang-btn" data-lang="ko" onclick="setLanguage('ko', true)">한국어</button>
+  </div>
 
-<div class="coupon-grid" id="couponList"></div>
+  <div class="header">
+    <h1 id="siteTitle"></h1>
+    <p id="siteSubtitle"></p>
+    <div id="unlockStatus" class="status-bar"></div>
+  </div>
+
+  <!-- 絞り込み・GPSエリア -->
+  <div class="filter-panel">
+    <div class="filter-group">
+      <span class="filter-label" id="labelCategory"></span>
+      <div class="chip-row" id="categoryBar"></div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label" id="labelArea"></span>
+      <div class="chip-row" id="areaBar"></div>
+    </div>
+
+    <div class="gps-row">
+      <button type="button" class="gps-btn" id="gpsBtn" onclick="sortByGPS()"></button>
+      <button type="button" class="gps-reset-btn" id="gpsResetBtn" onclick="resetGPS()" style="display:none;"></button>
+      <span class="gps-status" id="gpsStatus"></span>
+    </div>
+  </div>
+
+  <!-- クーポン一覧 -->
+  <div class="coupon-grid" id="couponList"></div>
+</div>
 
 <!-- パスワード入力モーダル -->
 <div class="modal-overlay" id="pwModal">
   <div class="modal-box">
     <button class="close-btn" onclick="closeModal('pwModal')" aria-label="Close">&times;</button>
-    <h3 style="margin-top:0;">Enter password</h3>
-    <p style="font-size:13px; color:#666; margin-bottom:4px;">Once you enter the password, other coupons will be unlocked as well.</p>
-    <input type="password" id="pwInput" class="pw-input" placeholder="パスワードを入力" onkeydown="if(event.key==='Enter') checkPassword()">
+    <h3 id="pwTitle" style="margin-top:0;"></h3>
+    <p id="pwDesc" style="font-size:13px; color:#666; margin-bottom:4px;"></p>
+    <input type="password" id="pwInput" class="pw-input" onkeydown="if(event.key==='Enter') checkPassword()">
     <br>
-    <button class="btn" onclick="checkPassword()">Unlock</button>
-    <p class="error-msg" id="pwError">The password you entered is incorrect. Please try again.</p>
+    <button type="button" class="btn" id="pwSubmitBtn" onclick="checkPassword()"></button>
+    <p class="error-msg" id="pwError"></p>
   </div>
 </div>
 
@@ -227,156 +409,219 @@
   <div class="modal-box">
     <button class="close-btn" onclick="closeModal('detailModal')" aria-label="Close">&times;</button>
     <img id="detailImg" class="detail-img" src="" alt="">
-    <h3 id="detailTitle" style="margin:0 0 8px 0; font-size:18px;"></h3>
+    <div class="meta-row" style="justify-content:center; margin-bottom:8px;">
+      <span id="detailCategory" class="badge badge-cat"></span>
+      <span id="detailArea" class="badge badge-area"></span>
+    </div>
+    <h3 id="detailTitle" style="margin:0 0 8px; font-size:18px;"></h3>
     <p id="detailDesc" style="font-size:14px; color:#333; margin:0; line-height:1.6;"></p>
     <div class="detail-terms" id="detailTerms"></div>
-    <button id="useBtn" class="btn btn-use" onclick="useCoupon()">Use coupon (Please show this screen to staff.)</button>
-    <p style="font-size:11px; color:#888; margin-top:8px;">※Please show this screen to a member of staff when paying.</p>
+    <button type="button" id="useBtn" class="btn btn-use" onclick="useCoupon()"></button>
+    <p id="staffNote" style="font-size:11px; color:#888; margin-top:8px;"></p>
   </div>
 </div>
 
 <script>
 // =========================================================
-// ★ここを書き換えてパスワードやクーポンを編集してください★
+// ★共通パスワード・言語文言・クーポン一覧の設定★
 // =========================================================
-const SHARED_PASSWORD = "0710"; // 全クーポン共通のパスワード
+const SHARED_PASSWORD = "123"; // 全クーポン共通のパスワード
+
+const I18N = {
+  ja: {
+    pageTitle: "限定クーポン一覧",
+    siteTitle: "🎁 限定クーポン一覧",
+    siteSubtitle: "言語・カテゴリ・エリアで絞り込めます。クーポンをタップしてパスワードを入力すると詳細が開きます。",
+    lockedStatus: "🔒 パスワード未解除",
+    unlockedStatus: "🔓 パスワード解除済み（全クーポン利用可能）",
+    labelCategory: "カテゴリ",
+    labelArea: "エリア",
+    allCategories: "全カテゴリ",
+    allAreas: "全エリア",
+    gpsBtn: "📍 現在地から近い順に並べる",
+    gpsResetBtn: "並び順を戻す",
+    gpsIdle: "※位置情報を許可すると近いクーポン順に表示できます",
+    gpsLoading: "現在地を取得中...",
+    gpsSorted: "📍 現在地から近い順に並べ替えました",
+    gpsError: "位置情報が取得できませんでした（許可設定や通信状況をご確認ください）。",
+    gpsUnsupported: "お使いのブラウザでは位置情報を利用できません。",
+    available: "利用可能",
+    used: "使用済み",
+    empty: "条件に一致するクーポンは現在ありません。",
+    pwTitle: "パスワード入力",
+    pwDesc: "一度入力すると、他のクーポンも解除されます",
+    pwPlaceholder: "パスワードを入力",
+    pwSubmitBtn: "ロックを解除する",
+    pwError: "パスワードが正しくありません",
+    useBtn: "クーポンを使用する（スタッフ提示）",
+    confirmUseBtn: "本当に使用済みにしますか？（もう一度タップで確定）",
+    alreadyUsedBtn: "このクーポンは使用済みです",
+    staffNote: "※お会計時にスタッフへこの画面をお見せください",
+    categories: {
+      food: "飲食店",
+      experience: "体験サービス",
+      ticket: "入場券"
+    },
+    areas: {
+      shibuya: "東京・渋谷",
+      shinjuku: "東京・新宿",
+      umeda: "大阪・梅田"
+    }
+  },
+  en: {
+    pageTitle: "Exclusive Coupons",
+    siteTitle: "🎁 Exclusive Coupons",
+    siteSubtitle: "Filter by language, category, or area. Tap a coupon and enter the password to view details.",
+    lockedStatus: "🔒 Locked",
+    unlockedStatus: "🔓 Unlocked (All coupons available)",
+    labelCategory: "Category",
+    labelArea: "Area",
+    allCategories: "All Categories",
+    allAreas: "All Areas",
+    gpsBtn: "📍 Sort by Nearest",
+    gpsResetBtn: "Reset Order",
+    gpsIdle: "* Allow location access to sort coupons by distance",
+    gpsLoading: "Getting your location...",
+    gpsSorted: "📍 Sorted from nearest to you",
+    gpsError: "Could not get location. Please check your browser permissions.",
+    gpsUnsupported: "Location services are not supported on this browser.",
+    available: "Available",
+    used: "Used",
+    empty: "No coupons match the selected filters.",
+    pwTitle: "Enter Password",
+    pwDesc: "Once unlocked, other coupons will open automatically",
+    pwPlaceholder: "Enter password",
+    pwSubmitBtn: "Unlock Coupons",
+    pwError: "Incorrect password",
+    useBtn: "Redeem Coupon (Show to Staff)",
+    confirmUseBtn: "Mark as used? Tap again to confirm",
+    alreadyUsedBtn: "Already Used",
+    staffNote: "* Please show this screen to staff at checkout",
+    categories: {
+      food: "Dining",
+      experience: "Activities",
+      ticket: "Admission"
+    },
+    areas: {
+      shibuya: "Tokyo / Shibuya",
+      shinjuku: "Tokyo / Shinjuku",
+      umeda: "Osaka / Umeda"
+    }
+  },
+  zh: {
+    pageTitle: "精選優惠券一覽",
+    siteTitle: "🎁 精選優惠券一覽",
+    siteSubtitle: "可依語言、類別與地區篩選。點擊優惠券並輸入密碼即可查看詳情。",
+    lockedStatus: "🔒 尚未解鎖",
+    unlockedStatus: "🔓 已解鎖（所有優惠券皆可使用）",
+    labelCategory: "類別",
+    labelArea: "地區",
+    allCategories: "全部類別",
+    allAreas: "全部地區",
+    gpsBtn: "📍 依距離由近到遠排序",
+    gpsResetBtn: "恢復預設排序",
+    gpsIdle: "※ 允許定位權限後可依距離排序顯示",
+    gpsLoading: "正在取得目前位置...",
+    gpsSorted: "📍 已依距離由近到遠排序",
+    gpsError: "無法取得位置資訊，請確認定位權限與網路連線。",
+    gpsUnsupported: "此瀏覽器不支援定位功能。",
+    available: "可使用",
+    used: "已使用",
+    empty: "目前沒有符合條件的優惠券。",
+    pwTitle: "輸入密碼",
+    pwDesc: "輸入一次後，其他優惠券也會一併解鎖",
+    pwPlaceholder: "請輸入密碼",
+    pwSubmitBtn: "解除鎖定",
+    pwError: "密碼不正確",
+    useBtn: "使用優惠券（出示給店員）",
+    confirmUseBtn: "確定要標記為已使用嗎？請再點一次確認",
+    alreadyUsedBtn: "此優惠券已使用",
+    staffNote: "※ 結帳時請向店員出示此畫面",
+    categories: {
+      food: "餐飲美食",
+      experience: "體驗行程",
+      ticket: "門票優惠"
+    },
+    areas: {
+      shibuya: "東京・澀谷",
+      shinjuku: "東京・新宿",
+      umeda: "大阪・梅田"
+    }
+  },
+  ko: {
+    pageTitle: "한정 쿠폰 모음",
+    siteTitle: "🎁 한정 쿠폰 모음",
+    siteSubtitle: "언어, 카테고리, 지역별로 필터링할 수 있습니다. 쿠폰을 탭하고 비밀번호를 입력하세요.",
+    lockedStatus: "🔒 잠금 상태",
+    unlockedStatus: "🔓 잠금 해제됨 (모든 쿠폰 이용 가능)",
+    labelCategory: "카테고리",
+    labelArea: "지역",
+    allCategories: "전체 카테고리",
+    allAreas: "전체 지역",
+    gpsBtn: "📍 가까운 순으로 정렬",
+    gpsResetBtn: "기본 정렬로 복귀",
+    gpsIdle: "※ 위치 권한을 허용하면 가까운 쿠폰 순으로 볼 수 있습니다",
+    gpsLoading: "현재 위치를 확인 중...",
+    gpsSorted: "📍 현재 위치에서 가까운 순으로 정렬했습니다",
+    gpsError: "위치 정보를 가져올 수 없습니다. 권한 설정을 확인해 주세요.",
+    gpsUnsupported: "이 브라우저에서는 위치 기능을 지원하지 않습니다.",
+    available: "사용 가능",
+    used: "사용 완료",
+    empty: "선택한 조건에 맞는 쿠폰이 없습니다.",
+    pwTitle: "비밀번호 입력",
+    pwDesc: "한 번 입력하면 다른 쿠폰도 함께 해제됩니다",
+    pwPlaceholder: "비밀번호 입력",
+    pwSubmitBtn: "잠금 해제",
+    pwError: "비밀번호가 올바르지 않습니다",
+    useBtn: "쿠폰 사용하기 (직원 제시)",
+    confirmUseBtn: "사용 완료로 처리할까요? 한 번 더 탭하면 확정됩니다",
+    alreadyUsedBtn: "이미 사용한 쿠폰입니다",
+    staffNote: "* 결제 시 직원에게 이 화면을 보여주세요",
+    categories: {
+      food: "맛집·음식점",
+      experience: "체험·액티비티",
+      ticket: "입장권"
+    },
+    areas: {
+      shibuya: "도쿄·시부야",
+      shinjuku: "도쿄·신주쿠",
+      umeda: "오사카·우메다"
+    }
+  }
+};
+
+const CATEGORY_KEYS = ["food", "experience", "ticket"];
+const AREA_KEYS = ["shibuya", "shinjuku", "umeda"];
 
 const coupons = [
   {
     id: "coupon_1",
-    title: "【初回限定】お会計から20%OFF",
-    shortDesc: "全メニュー対象！お得な割引クーポン",
+    category: "food",
+    area: "shibuya",
+    lat: 35.6580,
+    lng: 139.7016,
     image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80",
-    detailDesc: "お会計時にこの画面をご提示いただくと、合計金額から20%割引いたします。\n30,000円以上で30%割引いたします。",
-    terms: "・有効期限：2026年12月末まで\n・他の割引との併用不可\n・お一人様1回限り有効"
-  },
-  {
-    id: "coupon_2",
-    title: "ドリンク1杯無料サービス",
-    shortDesc: "お好きなソフトドリンクを1杯プレゼント",
-    image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80",
-    detailDesc: "お食事をご注文の方に、お好きなソフトドリンクを1杯無料でサービスいたします。",
-    terms: "・有効期限：2026年12月末まで\n・アルコール類は対象外\n・1グループ1枚まで"
-  },
-  {
-    id: "coupon_3",
-    title: "特製デザートプレゼント",
-    shortDesc: "食後の季節限定スイーツが無料！",
-    image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=600&q=80",
-    detailDesc: "ディナータイムにご来店のお客様限定で、本日の特製デザートをプレゼント！",
-    terms: "・17:00以降のご来店限定\n・なくなり次第終了"
-  },
-  {
-    id: "coupon_4",
-    title: "【First-Time Only】20% Off Your Bill",
-    shortDesc: "全メニュー対象！お得な割引クーポン",
-    image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80",
-    detailDesc: "お会計時にこの画面をご提示いただくと、合計金額から40%割引いたします。",
-    terms: "・有効期限：2026年12月末まで\n・他の割引との併用不可\n・お一人様1回限り有効"
-  },
-];
-
-let currentCoupon = null;
-
-function isUnlocked() {
-  return sessionStorage.getItem("shared_coupon_unlocked") === "true";
-}
-
-function updateUnlockBadge() {
-  const badge = document.getElementById("unlockStatus");
-  if (isUnlocked()) {
-    badge.textContent = "🔓 Password unlocked. All coupons are now available.";
-    badge.className = "status-bar unlocked";
-  } else {
-    badge.textContent = "🔒 Password locked ";
-    badge.className = "status-bar";
-  }
-}
-
-function renderCoupons() {
-  const list = document.getElementById("couponList");
-  list.innerHTML = "";
-
-  coupons.forEach(c => {
-    const isUsed = localStorage.getItem("coupon_used_" + c.id) === "true";
-    const card = document.createElement("div");
-    card.className = "coupon-card";
-    card.onclick = () => handleCouponClick(c);
-
-    card.innerHTML = `
-      <img src="${c.image}" alt="${c.title}">
-      <div class="coupon-info">
-        <span class="coupon-badge ${isUsed ? 'used' : ''}">${isUsed ? 'Used' : 'Available to use / Valid'}</span>
-        <h2 class="coupon-title">${c.title}</h2>
-        <p class="coupon-desc">${c.shortDesc}</p>
-      </div>
-    `;
-    list.appendChild(card);
-  });
-
-  updateUnlockBadge();
-}
-
-function handleCouponClick(coupon) {
-  currentCoupon = coupon;
-  if (isUnlocked()) {
-    openDetailModal();
-  } else {
-    document.getElementById("pwInput").value = "";
-    document.getElementById("pwError").style.display = "none";
-    document.getElementById("pwModal").style.display = "flex";
-    setTimeout(() => document.getElementById("pwInput").focus(), 50);
-  }
-}
-
-function checkPassword() {
-  const input = document.getElementById("pwInput").value;
-  if (input === SHARED_PASSWORD) {
-    sessionStorage.setItem("shared_coupon_unlocked", "true");
-    closeModal("pwModal");
-    updateUnlockBadge();
-    openDetailModal();
-  } else {
-    document.getElementById("pwError").style.display = "block";
-  }
-}
-
-function openDetailModal() {
-  document.getElementById("detailImg").src = currentCoupon.image;
-  document.getElementById("detailTitle").innerText = currentCoupon.title;
-  document.getElementById("detailDesc").innerText = currentCoupon.detailDesc;
-  document.getElementById("detailTerms").innerText = currentCoupon.terms;
-
-  const isUsed = localStorage.getItem("coupon_used_" + currentCoupon.id) === "true";
-  const btn = document.getElementById("useBtn");
-
-  if (isUsed) {
-    btn.innerText = "This coupon is used.";
-    btn.className = "btn btn-used";
-    btn.disabled = true;
-  } else {
-    btn.innerText = "Use coupon (Please show this screen to staff.)";
-    btn.className = "btn btn-use";
-    btn.disabled = false;
-  }
-
-  document.getElementById("detailModal").style.display = "flex";
-}
-
-function useCoupon() {
-  if (!currentCoupon) return;
-  if (confirm("Do you want to mark this coupon as used?\n※Once you mark this coupon as used, this action cannot be undone.")) {
-    localStorage.setItem("coupon_used_" + currentCoupon.id, "true");
-    openDetailModal();
-    renderCoupons();
-  }
-}
-
-function closeModal(id) {
-  document.getElementById(id).style.display = "none";
-}
-
-renderCoupons();
-</script>
-</body>
-</html>
+    i18n: {
+      ja: {
+        title: "【初回限定】お会計から20%OFF",
+        shortDesc: "全メニュー対象！お得な割引クーポン",
+        detailDesc: "お会計時にこの画面をご提示いただくと、合計金額から20%割引いたします。",
+        terms: "・有効期限：2026年12月末まで\n・他の割引との併用不可\n・お一人様1回限り有効"
+      },
+      en: {
+        title: "20% OFF Your Bill (First Visit)",
+        shortDesc: "Valid on all menu items!",
+        detailDesc: "Show this screen at checkout to receive 20% off your total bill.",
+        terms: "• Valid through Dec 31, 2026\n• Cannot be combined with other offers\n• One use per person"
+      },
+      zh: {
+        title: "【首次限定】結帳享 8 折優惠",
+        shortDesc: "全品項適用！超值折扣券",
+        detailDesc: "結帳時出示本畫面，即可享總金額 20% 折扣。",
+        terms: "・有效期限至 2026 年 12 月底\n・不得與其他優惠併用\n・每人限用一次"
+      },
+      ko: {
+        title: "【첫 방문 한정】결제 금액 20% 할인",
+        shortDesc: "전 메뉴 대상 알뜰 할인 쿠폰",
+        detailDesc: "결제 시 본 화면을 보여드리면 총 결제 금액에서 20% 할인됩니다.",
+        terms: "• 유효기간: 2026년 12월 말까지\n• 타 할인
