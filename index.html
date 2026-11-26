@@ -47,6 +47,11 @@
       cursor: pointer;
     }
 
+    button:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
     .container {
       max-width: 1120px;
       margin: 0 auto;
@@ -327,6 +332,11 @@
       color: #4b5565;
     }
 
+    .tag-status-unlimited {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
     .tag-meta {
       background: var(--bg-subtle);
       color: var(--text-main);
@@ -547,7 +557,13 @@
     .usage-title {
       font-size: 13px;
       font-weight: 800;
-      margin: 0 0 10px;
+      margin: 0 0 6px;
+    }
+
+    .usage-note {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin: 0 0 12px;
     }
 
     .usage-actions {
@@ -566,7 +582,7 @@
       font-weight: 700;
     }
 
-    .btn-primary:hover {
+    .btn-primary:hover:not(:disabled) {
       background: var(--accent-hover);
     }
 
@@ -580,14 +596,8 @@
       font-weight: 700;
     }
 
-    .btn-reset {
-      border: 1px solid var(--border);
-      background: var(--bg-surface);
-      color: var(--text-muted);
-      padding: 10px 14px;
-      border-radius: var(--radius-sm);
-      font-size: 12px;
-      font-weight: 600;
+    .btn-confirm:hover:not(:disabled) {
+      filter: brightness(0.95);
     }
 
     .password-input {
@@ -709,9 +719,10 @@
         pwPlaceholder: "パスワードを入力",
         pwSubmit: "解除する",
         pwError: "パスワードが正しくありません。",
-        statusAvailable: "利用可能",
+        statusAvailable: "利用可能（1回限り）",
         statusProgress: "利用手続き中",
         statusUsed: "利用済み",
+        statusUnlimited: "何度でも利用可能",
         couponCodeLabel: "クーポンコード",
         copyCode: "コードをコピー",
         copiedCode: "コピーしました",
@@ -721,10 +732,13 @@
         addressLabel: "住所・地図",
         openMap: "Googleマップで見る",
         phoneLabel: "電話番号",
-        usageTitle: "利用記録（2ステップ）",
-        step1Btn: "ステップ1：利用を開始する",
-        step2Btn: "ステップ2：利用を完了する",
-        resetBtn: "利用記録をリセット",
+        usageTitle: "利用方法・利用記録",
+        onceNote: "※1回限り有効です。スタッフに画面をご提示のうえ、利用ボタンを押すと「利用済み」になります（一度利用済みにすると元に戻せません）。",
+        unlimitedNote: "※何度でもご利用いただけます。店頭や受付で本画面をご提示ください。",
+        step1Btn: "ステップ1：提示・利用を開始する",
+        step2Btn: "ステップ2：利用済みにする",
+        unlimitedShowBtn: "画面を提示して利用する",
+        unlimitedUsedFeedback: "利用画面を表示しました（何度でもご利用いただけます）",
         noCoupons: "条件に一致するクーポンが見つかりませんでした。",
         translating: "選択された言語に自動翻訳しています...",
         translationNotice: "※一部テキストは自動翻訳（MyMemory）を使用しています。",
@@ -761,9 +775,10 @@
         pwPlaceholder: "Enter password",
         pwSubmit: "Unlock",
         pwError: "Incorrect password. Please try again.",
-        statusAvailable: "Available",
+        statusAvailable: "Available (One-time)",
         statusProgress: "In Progress",
         statusUsed: "Used",
+        statusUnlimited: "Unlimited Use",
         couponCodeLabel: "Coupon Code",
         copyCode: "Copy Code",
         copiedCode: "Copied",
@@ -773,10 +788,13 @@
         addressLabel: "Address & Map",
         openMap: "Open in Google Maps",
         phoneLabel: "Phone",
-        usageTitle: "Usage Tracker (2 Steps)",
+        usageTitle: "How to Use & Usage Status",
+        onceNote: "*Valid once only. Show this screen to staff and tap the button to mark as Used (cannot be reset once marked Used).",
+        unlimitedNote: "*Can be used multiple times. Simply present this screen to staff.",
         step1Btn: "Step 1: Start Using",
-        step2Btn: "Step 2: Complete Usage",
-        resetBtn: "Reset Usage",
+        step2Btn: "Step 2: Mark as Used",
+        unlimitedShowBtn: "Present Screen to Use",
+        unlimitedUsedFeedback: "Screen ready to present (unlimited use)",
         noCoupons: "No coupons match your selected filters.",
         translating: "Auto-translating content...",
         translationNotice: "*Some text is auto-translated via MyMemory.",
@@ -803,9 +821,10 @@
         pwPlaceholder: "輸入密碼",
         pwSubmit: "解鎖",
         pwError: "密碼錯誤，請重新輸入。",
-        statusAvailable: "可使用",
+        statusAvailable: "可使用（限一次）",
         statusProgress: "使用進行中",
         statusUsed: "已使用",
+        statusUnlimited: "可重複使用",
         couponCodeLabel: "優惠代碼",
         copyCode: "複製代碼",
         copiedCode: "已複製",
@@ -815,10 +834,13 @@
         addressLabel: "地址／地圖",
         openMap: "在 Google 地圖中開啟",
         phoneLabel: "電話",
-        usageTitle: "使用紀錄（兩步驟）",
+        usageTitle: "使用方式與紀錄",
+        onceNote: "※限使用一次。向店員出示畫面並按下使用按鈕後將顯示為「已使用」（標記為已使用後無法重設）。",
+        unlimitedNote: "※可多次使用。請直接向店家或櫃檯出示本畫面。",
         step1Btn: "步驟 1：開始使用",
-        step2Btn: "步驟 2：完成使用",
-        resetBtn: "重設使用紀錄",
+        step2Btn: "步驟 2：標記為已使用",
+        unlimitedShowBtn: "出示畫面使用",
+        unlimitedUsedFeedback: "已準備好出示畫面（可多次使用）",
         noCoupons: "找不到符合條件的優惠券。",
         translating: "正在自動翻譯內容...",
         translationNotice: "*部分內容由 MyMemory 自動翻譯。",
@@ -845,9 +867,10 @@
         pwPlaceholder: "비밀번호 입력",
         pwSubmit: "잠금 해제",
         pwError: "비밀번호가 올바르지 않습니다.",
-        statusAvailable: "사용 가능",
+        statusAvailable: "사용 가능 (1회 한정)",
         statusProgress: "사용 진행 중",
         statusUsed: "사용 완료",
+        statusUnlimited: "횟수 제한 없이 이용 가능",
         couponCodeLabel: "쿠폰 코드",
         copyCode: "코드 복사",
         copiedCode: "복사됨",
@@ -857,10 +880,13 @@
         addressLabel: "주소·지도",
         openMap: "Google 지도에서 보기",
         phoneLabel: "전화번호",
-        usageTitle: "이용 기록 (2단계)",
+        usageTitle: "이용 방법 및 기록",
+        onceNote: "*1회만 사용 가능합니다. 직원에게 화면을 보여준 뒤 이용 버튼을 누르면 '사용 완료'가 됩니다(사용 완료 후에는 되돌릴 수 없습니다).",
+        unlimitedNote: "*여러 번 이용할 수 있습니다. 매장이나 접수처에 이 화면을 보여주세요.",
         step1Btn: "1단계: 이용 시작",
-        step2Btn: "2단계: 이용 완료",
-        resetBtn: "이용 기록 초기화",
+        step2Btn: "2단계: 사용 완료 처리",
+        unlimitedShowBtn: "화면 제시하여 이용하기",
+        unlimitedUsedFeedback: "제시 화면이 준비되었습니다(횟수 제한 없이 이용 가능)",
         noCoupons: "선택한 조건에 맞는 쿠폰이 없습니다.",
         translating: "선택한 언어로 자동 번역 중입니다...",
         translationNotice: "*일부 텍스트는 MyMemory 자동 번역이 적용되었습니다.",
@@ -890,15 +916,17 @@
 
     // =========================================================================
     // 2. クーポンデータ（日本語ソース）
+    // usageLimit: "once"（1回限り・リセット不可） または "unlimited"（何回でも利用可）
     // =========================================================================
     const COUPONS = [
       {
         id: "cpn-01",
         categoryKey: "gourmet",
         areaKey: "shibuya",
+        usageLimit: "once",
         title: "【初回限定】お会計から20%OFF",
         summary: "全メニュー対象！お得な割引クーポン",
-        description: "ご来店時に本画面をご提示ください。お会計総額から20%割引いたします。他の割引サービスとの併用はできません。",
+        description: "ご来店時にスタッフへ本画面をご提示ください。お会計総額から20%割引いたします。他の割引サービスとの併用はできません。",
         couponCode: "SHIBUYA20",
         storeName: "BOP CAFE SHIBUYA",
         address: "東京都渋谷区道玄坂1-2-3",
@@ -913,9 +941,10 @@
         id: "cpn-02",
         categoryKey: "gourmet",
         areaKey: "shinjuku",
+        usageLimit: "unlimited",
         title: "ドリンク1杯無料サービス",
         summary: "お好きなソフトドリンクを1杯プレゼント",
-        description: "お食事をご注文のお客様対象で、対象のソフトドリンクを1杯無料でご提供いたします。",
+        description: "ご来店時に本画面をご提示ください。対象のソフトドリンクを1杯無料でご提供いたします。",
         couponCode: "SHINJUKU-DRINK",
         storeName: "新宿ガーデンダイニング",
         address: "東京都新宿区新宿3-10-1",
@@ -930,6 +959,7 @@
         id: "cpn-03",
         categoryKey: "experience",
         areaKey: "shibuya",
+        usageLimit: "once",
         title: "ワークショップ体験 500円OFF",
         summary: "人気のものづくり体験がお得に楽しめる",
         description: "事前予約制のワークショップ体験が500円OFFになるクーポンです。予約フォームのクーポンコード欄にコードを入力し、当日は本画面をご提示ください。",
@@ -947,6 +977,7 @@
         id: "cpn-04",
         categoryKey: "admission",
         areaKey: "umeda",
+        usageLimit: "once",
         title: "施設入場料 100円引きクーポン",
         summary: "当日窓口での入場チケットが割引",
         description: "受付窓口にてクーポンコードまたは利用画面をご提示ください。大人・子どもチケットともに適用可能です。",
@@ -973,8 +1004,8 @@
       userLocation: null,
       activeCouponId: null,
       pendingCouponIdAfterAuth: null,
-      // { [lang]: { coupons: { [id]: { title, summary, description, bookingNote, storeName, address } } } }
-      translatedCache: {}
+      translatedCache: {},
+      unlimitedNoticeActive: false
     };
 
     function isUnlocked() {
@@ -996,11 +1027,10 @@
 
     function setUsageStep(couponId, step) {
       const map = getUsageMap();
-      if (step === 0) {
-        delete map[couponId];
-      } else {
-        map[couponId] = step;
-      }
+      const prevStep = Number(map[couponId] || 0);
+      // 1回限り（"once"）はステップを戻せない（リセット不可）
+      const nextStep = Math.max(prevStep, Number(step));
+      map[couponId] = nextStep;
       localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(map));
     }
 
@@ -1051,7 +1081,6 @@
 
       bannerEl.textContent = I18N[lang].translating;
 
-      // カテゴリ・エリア翻訳
       for (const key of CATEGORY_KEYS) {
         if (I18N[lang].categories[key] === I18N.ja.categories[key]) {
           I18N[lang].categories[key] = await translateText(I18N.ja.categories[key], lang);
@@ -1063,7 +1092,6 @@
         }
       }
 
-      // クーポン文面翻訳
       const couponTranslations = {};
       for (const cp of COUPONS) {
         couponTranslations[cp.id] = {
@@ -1214,9 +1242,12 @@
       }
     }
 
-    function getStatusInfo(couponId) {
+    function getStatusInfo(coupon) {
       const dict = t();
-      const step = getUsageStep(couponId);
+      if (coupon.usageLimit === "unlimited") {
+        return { label: dict.statusUnlimited, cls: "tag-status-unlimited" };
+      }
+      const step = getUsageStep(coupon.id);
       if (step >= 2) {
         return { label: dict.statusUsed, cls: "tag-status-used" };
       }
@@ -1257,7 +1288,7 @@
 
       for (const item of list) {
         const cp = item.localized;
-        const status = getStatusInfo(cp.id);
+        const status = getStatusInfo(cp);
         const card = document.createElement("article");
         card.className = "coupon-card";
         card.tabIndex = 0;
@@ -1323,6 +1354,7 @@
       const raw = COUPONS.find((c) => c.id === couponId);
       if (!raw) return;
       state.activeCouponId = couponId;
+      state.unlimitedNoticeActive = false;
       renderDetailModalContent();
       document.getElementById("detailModal").classList.add("open");
     }
@@ -1330,6 +1362,7 @@
     function closeDetailModal() {
       document.getElementById("detailModal").classList.remove("open");
       state.activeCouponId = null;
+      state.unlimitedNoticeActive = false;
     }
 
     function renderDetailModalContent() {
@@ -1337,8 +1370,9 @@
       if (!raw) return;
       const cp = getLocalizedCoupon(raw);
       const dict = t();
-      const status = getStatusInfo(cp.id);
-      const currentStep = getUsageStep(cp.id);
+      const status = getStatusInfo(cp);
+      const isUnlimited = cp.usageLimit === "unlimited";
+      const currentStep = isUnlimited ? 0 : getUsageStep(cp.id);
 
       const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cp.storeName} ${raw.address}`)}`;
       const telHref = cp.phone ? `tel:${cp.phone.replace(/[^+\d]/g, "")}` : "";
@@ -1369,6 +1403,38 @@
             </div>
           `
           : "";
+
+      const usageControlsHtml = isUnlimited
+        ? `
+          <div class="usage-box">
+            <div class="usage-title">${escapeHtml(dict.usageTitle)}（${escapeHtml(status.label)}）</div>
+            <p class="usage-note">${escapeHtml(dict.unlimitedNote)}</p>
+            <div class="usage-actions">
+              <button class="btn-confirm" type="button" id="unlimitedUseBtn">
+                ${escapeHtml(dict.unlimitedShowBtn)}
+              </button>
+            </div>
+            ${
+              state.unlimitedNoticeActive
+                ? `<p class="usage-note" style="margin: 10px 0 0; color: var(--success); font-weight: 700;">${escapeHtml(dict.unlimitedUsedFeedback)}</p>`
+                : ""
+            }
+          </div>
+        `
+        : `
+          <div class="usage-box">
+            <div class="usage-title">${escapeHtml(dict.usageTitle)}（${escapeHtml(status.label)}）</div>
+            <p class="usage-note">${escapeHtml(dict.onceNote)}</p>
+            <div class="usage-actions">
+              <button class="btn-primary" type="button" id="step1Btn" ${currentStep >= 1 ? "disabled" : ""}>
+                ${escapeHtml(dict.step1Btn)}
+              </button>
+              <button class="btn-confirm" type="button" id="step2Btn" ${currentStep >= 2 ? "disabled" : ""}>
+                ${escapeHtml(dict.step2Btn)}
+              </button>
+            </div>
+          </div>
+        `;
 
       const container = document.getElementById("detailContent");
       container.innerHTML = `
@@ -1412,20 +1478,7 @@
           </tbody>
         </table>
 
-        <div class="usage-box">
-          <div class="usage-title">${escapeHtml(dict.usageTitle)}（${escapeHtml(status.label)}）</div>
-          <div class="usage-actions">
-            <button class="btn-primary" type="button" id="step1Btn" ${currentStep >= 1 ? "disabled" : ""}>
-              ${escapeHtml(dict.step1Btn)}
-            </button>
-            <button class="btn-confirm" type="button" id="step2Btn" ${currentStep >= 2 ? "disabled" : ""}>
-              ${escapeHtml(dict.step2Btn)}
-            </button>
-            <button class="btn-reset" type="button" id="resetStepBtn">
-              ${escapeHtml(dict.resetBtn)}
-            </button>
-          </div>
-        </div>
+        ${usageControlsHtml}
       `;
 
       const copyBtn = document.getElementById("copyCodeBtn");
@@ -1443,23 +1496,24 @@
         });
       }
 
-      document.getElementById("step1Btn").addEventListener("click", () => {
-        setUsageStep(cp.id, 1);
-        renderDetailModalContent();
-        renderCoupons();
-      });
+      if (isUnlimited) {
+        document.getElementById("unlimitedUseBtn").addEventListener("click", () => {
+          state.unlimitedNoticeActive = true;
+          renderDetailModalContent();
+        });
+      } else {
+        document.getElementById("step1Btn").addEventListener("click", () => {
+          setUsageStep(cp.id, 1);
+          renderDetailModalContent();
+          renderCoupons();
+        });
 
-      document.getElementById("step2Btn").addEventListener("click", () => {
-        setUsageStep(cp.id, 2);
-        renderDetailModalContent();
-        renderCoupons();
-      });
-
-      document.getElementById("resetStepBtn").addEventListener("click", () => {
-        setUsageStep(cp.id, 0);
-        renderDetailModalContent();
-        renderCoupons();
-      });
+        document.getElementById("step2Btn").addEventListener("click", () => {
+          setUsageStep(cp.id, 2);
+          renderDetailModalContent();
+          renderCoupons();
+        });
+      }
     }
 
     // =========================================================================
