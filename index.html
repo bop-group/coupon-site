@@ -279,7 +279,7 @@
       box-shadow: var(--shadow-md);
     }
 
-    /* 1200x750 = 1.6 : 1 ratio */
+    /* 一覧サムネイル：1200x750 = 1.6 : 1 ratio */
     .coupon-thumb-wrap {
       width: 100%;
       aspect-ratio: 1200 / 750;
@@ -418,22 +418,30 @@
       font-size: 18px;
       line-height: 1;
       color: var(--text-main);
+      z-index: 2;
     }
 
+    /* 詳細モーダル最上部：元画像の比率を保ち見切れずに全体表示 */
     .modal-image-wrap {
       width: 100%;
-      aspect-ratio: 1200 / 750;
       border-radius: var(--radius-md);
       overflow: hidden;
       background: var(--bg-subtle);
       margin-bottom: 14px;
+      padding: 8px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .modal-image {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
       display: block;
+      max-width: 100%;
+      max-height: 460px;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: var(--radius-sm);
     }
 
     .modal-title {
@@ -916,7 +924,12 @@
 
     // =========================================================================
     // 2. クーポンデータ（日本語ソース）
-    // usageLimit: "once"（1回限り・リセット不可） または "unlimited"（何回でも利用可）
+    // - image: 一覧カードサムネイル用（1200x750 推奨・cover表示）
+    // - detailImage: 詳細モーダル最上部に元比率・見切れなし（contain表示）で出す画像（未設定なら image を使用）
+    // - usageLimit: "once"（1回限り・リセット不可） または "unlimited"（何回でも利用可）
+    // - hideMap: true にすると住所があってもGoogleマップリンクを非表示
+    // - lat / lng: 特定拠点がないチェーン店などは null 指定可
+    // - bookingNote / bookingUrl: 事前予約や外部予約サイト誘導が必要な場合に設定
     // =========================================================================
     const COUPONS = [
       {
@@ -930,10 +943,12 @@
         couponCode: "SHIBUYA20",
         storeName: "BOP CAFE SHIBUYA",
         address: "東京都渋谷区道玄坂1-2-3",
+        hideMap: false,
         phone: "03-1234-5678",
         lat: 35.6580,
         lng: 139.7016,
         image: "./images/bop.jpg",
+        detailImage: "",
         bookingNote: "",
         bookingUrl: ""
       },
@@ -943,15 +958,17 @@
         areaKey: "shinjuku",
         usageLimit: "unlimited",
         title: "ドリンク1杯無料サービス",
-        summary: "お好きなソフトドリンクを1杯プレゼント",
+        summary: "全国の対象店舗でご利用いただけます",
         description: "ご来店時に本画面をご提示ください。対象のソフトドリンクを1杯無料でご提供いたします。",
         couponCode: "SHINJUKU-DRINK",
-        storeName: "新宿ガーデンダイニング",
-        address: "東京都新宿区新宿3-10-1",
-        phone: "03-2345-6789",
-        lat: 35.6896,
-        lng: 139.7006,
+        storeName: "ガーデンダイニング（対象全店）",
+        address: "全国の対象店舗",
+        hideMap: true,
+        phone: "",
+        lat: null,
+        lng: null,
         image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=1200&q=80",
+        detailImage: "",
         bookingNote: "",
         bookingUrl: ""
       },
@@ -966,10 +983,12 @@
         couponCode: "ART500",
         storeName: "渋谷アートスタジオ",
         address: "東京都渋谷区神宮前5-8-2",
+        hideMap: false,
         phone: "03-3456-7890",
         lat: 35.6641,
         lng: 139.7055,
         image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1200&q=80",
+        detailImage: "",
         bookingNote: "事前予約が必須です。以下の「予約サイトを開く」から日時をご予約のうえ、予約画面でクーポンコード「ART500」を入力してください。",
         bookingUrl: "https://example.com/booking/shibuya-workshop"
       },
@@ -984,10 +1003,12 @@
         couponCode: "UMEDA100",
         storeName: "梅田ミュージアム",
         address: "大阪府大阪市北区梅田2-5-25",
+        hideMap: false,
         phone: "06-1234-5678",
         lat: 34.7024,
         lng: 135.4959,
         image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=1200&q=80",
+        detailImage: "",
         bookingNote: "",
         bookingUrl: ""
       }
@@ -1100,7 +1121,7 @@
           description: await translateText(cp.description, lang),
           bookingNote: cp.bookingNote ? await translateText(cp.bookingNote, lang) : "",
           storeName: await translateText(cp.storeName, lang),
-          address: await translateText(cp.address, lang)
+          address: cp.address ? await translateText(cp.address, lang) : ""
         };
       }
 
@@ -1119,7 +1140,7 @@
         description: tr.description || coupon.description,
         bookingNote: coupon.bookingNote ? (tr.bookingNote || coupon.bookingNote) : "",
         storeName: tr.storeName || coupon.storeName,
-        address: tr.address || coupon.address
+        address: coupon.address ? (tr.address || coupon.address) : ""
       };
     }
 
@@ -1127,7 +1148,14 @@
     // 5. 距離計算（Haversine）
     // =========================================================================
     function calcDistanceKm(lat1, lon1, lat2, lon2) {
-      if (typeof lat1 !== "number" || typeof lon1 !== "number" || typeof lat2 !== "number" || typeof lon2 !== "number") {
+      if (
+        typeof lat1 !== "number" ||
+        typeof lon1 !== "number" ||
+        typeof lat2 !== "number" ||
+        typeof lon2 !== "number" ||
+        !Number.isFinite(lat2) ||
+        !Number.isFinite(lng2Check(lon2))
+      ) {
         return Infinity;
       }
       const R = 6371;
@@ -1141,6 +1169,10 @@
           Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
+    }
+
+    function lng2Check(val) {
+      return Number.isFinite(val) ? val : NaN;
     }
 
     // =========================================================================
@@ -1374,8 +1406,20 @@
       const isUnlimited = cp.usageLimit === "unlimited";
       const currentStep = isUnlimited ? 0 : getUsageStep(cp.id);
 
-      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cp.storeName} ${raw.address}`)}`;
+      // 詳細モーダル最上部の画像（detailImage があればそちらを優先、なければ一覧用 image）
+      const topImageSrc = cp.detailImage || cp.image;
+
+      const shouldShowMap = Boolean(raw.address) && !raw.hideMap;
+      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${raw.storeName} ${raw.address}`)}`;
       const telHref = cp.phone ? `tel:${cp.phone.replace(/[^+\d]/g, "")}` : "";
+
+      const topImageHtml = topImageSrc
+        ? `
+          <div class="modal-image-wrap">
+            <img class="modal-image" src="${escapeAttr(topImageSrc)}" alt="${escapeAttr(cp.title)}" />
+          </div>
+        `
+        : "";
 
       const codeHtml = cp.couponCode
         ? `
@@ -1403,6 +1447,22 @@
             </div>
           `
           : "";
+
+      const addressRowHtml = cp.address
+        ? `
+          <tr>
+            <th>${escapeHtml(dict.addressLabel)}</th>
+            <td>
+              <div>${escapeHtml(cp.address)}</div>
+              ${
+                shouldShowMap
+                  ? `<a href="${escapeAttr(mapUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(dict.openMap)} ↗</a>`
+                  : ""
+              }
+            </td>
+          </tr>
+        `
+        : "";
 
       const usageControlsHtml = isUnlimited
         ? `
@@ -1438,9 +1498,7 @@
 
       const container = document.getElementById("detailContent");
       container.innerHTML = `
-        <div class="modal-image-wrap">
-          <img class="modal-image" src="${escapeAttr(cp.image)}" alt="${escapeAttr(cp.title)}" />
-        </div>
+        ${topImageHtml}
         <div class="meta-tags">
           <span class="tag ${status.cls}">${escapeHtml(status.label)}</span>
           <span class="tag tag-meta">${escapeHtml(dict.categories[cp.categoryKey] || cp.categoryKey)}</span>
@@ -1458,13 +1516,7 @@
               <th>${escapeHtml(dict.storeLabel)}</th>
               <td>${escapeHtml(cp.storeName)}</td>
             </tr>
-            <tr>
-              <th>${escapeHtml(dict.addressLabel)}</th>
-              <td>
-                <div>${escapeHtml(cp.address)}</div>
-                <a href="${escapeAttr(mapUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(dict.openMap)} ↗</a>
-              </td>
-            </tr>
+            ${addressRowHtml}
             ${
               cp.phone
                 ? `
