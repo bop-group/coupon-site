@@ -339,12 +339,34 @@
     margin-bottom: 12px;
     background: #e9ecef;
   }
+  .detail-code-box {
+    background: #fffbeb;
+    border: 1px dashed #f59e0b;
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-top: 12px;
+    text-align: center;
+  }
+  .detail-code-label {
+    font-size: 11px;
+    font-weight: bold;
+    color: #b45309;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .detail-code-value {
+    font-size: 16px;
+    font-weight: bold;
+    letter-spacing: 0.08em;
+    color: #111827;
+    user-select: all;
+  }
   .detail-store-box {
     background: #f0f7ff;
     border: 1px solid #d6e8ff;
     border-radius: 10px;
     padding: 11px 12px;
-    margin-top: 12px;
+    margin-top: 10px;
     text-align: left;
     font-size: 12.5px;
     line-height: 1.6;
@@ -455,6 +477,12 @@
     <h3 id="detailTitle" style="margin:0 0 8px; font-size:18px;"></h3>
     <p id="detailDesc" style="font-size:14px; color:#333; margin:0; line-height:1.6;"></p>
 
+    <!-- クーポン番号（設定されている場合のみ表示） -->
+    <div class="detail-code-box" id="detailCodeBox" style="display:none;">
+      <span class="detail-code-label" id="labelCouponCode"></span>
+      <span class="detail-code-value" id="detailCouponCode"></span>
+    </div>
+
     <!-- 店舗情報（設定されている場合のみ表示） -->
     <div class="detail-store-box" id="detailStoreBox" style="display:none;">
       <div class="store-row" id="storeNameRow" style="display:none;">
@@ -479,12 +507,15 @@
 
 <script>
 (function () {
+  // =========================================================
+  // ★日本語（ja）を基準に編集・追加できます（改行は \n、末尾カンマに注意）★
+  // =========================================================
   const SHARED_PASSWORD = "0710";
 
   const I18N = {
     ja: {
       pageTitle: "限定クーポン一覧",
-      siteTitle: "🎁 限定クーポン一覧 🎁",
+      siteTitle: "🎁 限定クーポン一覧",
       siteSubtitle: "言語・カテゴリ・エリアで絞り込めます。クーポンをタップしてパスワードを入力すると詳細が開きます。\nパスワードはJAPAN QUALITY SIM を購入後、メール本文に記載しております。",
       lockedStatus: "🔒 パスワード未解除",
       unlockedStatus: "🔓 パスワード解除済み（全クーポン利用可能）",
@@ -507,6 +538,7 @@
       pwPlaceholder: "パスワードを入力",
       pwSubmitBtn: "ロックを解除する",
       pwError: "パスワードが正しくありません",
+      couponCodeLabel: "クーポン番号",
       storeNameLabel: "店舗名：",
       addressLabel: "住所（地図）：",
       phoneLabel: "電話番号：",
@@ -517,13 +549,11 @@
       categories: {
         food: "飲食店",
         experience: "体験サービス",
-        ticket: "入場券",
-        goods: "雑貨"
+        ticket: "入場券"
       },
       areas: {
         shibuya: "東京・渋谷",
         shinjuku: "東京・新宿",
-        asakusa: "東京・浅草",
         umeda: "大阪・梅田"
       }
     },
@@ -552,6 +582,7 @@
       pwPlaceholder: "Enter password",
       pwSubmitBtn: "Unlock Coupons",
       pwError: "Incorrect password",
+      couponCodeLabel: "Coupon Code",
       storeNameLabel: "Store:",
       addressLabel: "Address (Map):",
       phoneLabel: "Phone:",
@@ -587,6 +618,7 @@
       pwPlaceholder: "請輸入密碼",
       pwSubmitBtn: "解除鎖定",
       pwError: "密碼不正確",
+      couponCodeLabel: "優惠券編號",
       storeNameLabel: "店家名稱：",
       addressLabel: "地址（地圖）：",
       phoneLabel: "電話：",
@@ -622,6 +654,7 @@
       pwPlaceholder: "비밀번호 입력",
       pwSubmitBtn: "잠금 해제",
       pwError: "비밀번호가 올바르지 않습니다",
+      couponCodeLabel: "쿠폰 번호",
       storeNameLabel: "매장명:",
       addressLabel: "주소(지도):",
       phoneLabel: "전화번호:",
@@ -634,14 +667,17 @@
     }
   };
 
-  const CATEGORY_KEYS = ["food", "experience", "ticket", "goods"];
-  const AREA_KEYS = ["shibuya", "shinjuku", "asakusa", "umeda"];
+  // ★カテゴリ・エリアを増やす場合は I18N.ja と両方に同じキーを追加してください★
+  const CATEGORY_KEYS = Object.keys(I18N.ja.categories);
+  const AREA_KEYS = Object.keys(I18N.ja.areas);
 
+  // ★couponCode / storeName / address / phone は不要な場合、省略または "" で非表示になります★
   const coupons = [
     {
       id: "coupon_1",
       category: "food",
       area: "shibuya",
+      couponCode: "JQS-SHB-20OFF",
       lat: 35.6580,
       lng: 139.7016,
       image: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80",
@@ -661,6 +697,7 @@
       id: "coupon_2",
       category: "food",
       area: "shinjuku",
+      couponCode: "JQS-DRINK-01",
       lat: 35.6896,
       lng: 139.7006,
       image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80",
@@ -677,6 +714,7 @@
       id: "coupon_3",
       category: "experience",
       area: "shibuya",
+      couponCode: "JQS-CRAFT-500",
       lat: 35.6595,
       lng: 139.7004,
       image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=600&q=80",
@@ -868,6 +906,12 @@
     return I18N[currentLang] || I18N.ja;
   }
 
+  function getCouponCode(coupon) {
+    if (!coupon) return "";
+    const jaData = (coupon.i18n && coupon.i18n.ja) || {};
+    return String(coupon.couponCode || jaData.couponCode || "").trim();
+  }
+
   function getCouponText(coupon) {
     const i18nObj = coupon.i18n || {};
     const jaData = i18nObj.ja || {};
@@ -959,6 +1003,7 @@
     document.getElementById("pwInput").placeholder = dict.pwPlaceholder;
     document.getElementById("pwSubmitBtn").textContent = dict.pwSubmitBtn;
     document.getElementById("pwError").textContent = dict.pwError;
+    document.getElementById("labelCouponCode").textContent = dict.couponCodeLabel;
     document.getElementById("labelStoreName").textContent = dict.storeNameLabel;
     document.getElementById("labelStoreAddress").textContent = dict.addressLabel;
     document.getElementById("labelStorePhone").textContent = dict.phoneLabel;
@@ -1188,6 +1233,7 @@
     if (!currentCoupon) return;
     const dict = t();
     const text = getCouponText(currentCoupon);
+    const couponCode = getCouponCode(currentCoupon);
 
     pendingUseConfirm = false;
     document.getElementById("detailImg").src = currentCoupon.image || "";
@@ -1196,6 +1242,17 @@
     document.getElementById("detailTitle").textContent = text.title;
     document.getElementById("detailDesc").textContent = text.detailDesc;
 
+    // クーポン番号の表示制御
+    const codeBox = document.getElementById("detailCodeBox");
+    if (couponCode) {
+      document.getElementById("labelCouponCode").textContent = dict.couponCodeLabel;
+      document.getElementById("detailCouponCode").textContent = couponCode;
+      codeBox.style.display = "block";
+    } else {
+      codeBox.style.display = "none";
+    }
+
+    // 店舗名・住所・電話番号の表示制御
     const hasName = Boolean(text.storeName && text.storeName.trim());
     const hasAddress = Boolean(text.address && text.address.trim());
     const hasPhone = Boolean(text.phone && text.phone.trim());
