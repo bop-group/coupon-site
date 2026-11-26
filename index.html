@@ -696,7 +696,7 @@
     // =========================================================================
     // 1. 基本設定・多言語辞書（日本語ソース）
     // =========================================================================
-    const SHARED_PASSWORD = "0710"; // 必要に応じて変更してください
+    const SHARED_PASSWORD = "0710";
     const AUTH_STORAGE_KEY = "coupon_site_unlocked_v1";
     const USAGE_STORAGE_KEY = "coupon_site_usage_v1";
     const TRANSLATION_CACHE_PREFIX = "coupon_site_tr_v1_";
@@ -710,7 +710,7 @@
 
     const I18N = {
       ja: {
-        title: "🎁 限定クーポン一覧 🎁",
+        title: "限定クーポン一覧",
         subtitle: "言語・カテゴリ・エリアで絞り込めます。クーポンをタップしてパスワードを入力すると詳細が開きます。パスワードはJAPAN QUALITY SIMをご購入後、メール本文に記載しております。",
         categoryLabel: "カテゴリ",
         areaLabel: "エリア",
@@ -727,7 +727,8 @@
         pwPlaceholder: "パスワードを入力",
         pwSubmit: "解除する",
         pwError: "パスワードが正しくありません。",
-        statusAvailable: "利用可能（1回限り）",
+        statusAvailableOnce: "利用可能（1回限り）",
+        statusAvailableDaily: "利用可能（1日1回・毎日0:00リセット）",
         statusProgress: "利用手続き中",
         statusUsed: "利用済み",
         statusUnlimited: "何度でも利用可能",
@@ -742,6 +743,7 @@
         phoneLabel: "電話番号",
         usageTitle: "利用方法・利用記録",
         onceNote: "※1回限り有効です。スタッフに画面をご提示のうえ、利用ボタンを押すと「利用済み」になります（一度利用済みにすると元に戻せません）。",
+        dailyNote: "※1日1回ご利用いただけます（毎日0:00に自動リセット）。スタッフに画面をご提示のうえ、利用ボタンを押してください。",
         unlimitedNote: "※何度でもご利用いただけます。店頭や受付で本画面をご提示ください。",
         step1Btn: "ステップ1：提示・利用を開始する",
         step2Btn: "ステップ2：利用済みにする",
@@ -754,11 +756,11 @@
         geoDenied: "位置情報の利用が許可されなかったため、標準順で表示しています。",
         categories: {
           gourmet: "グルメ・食品",
-          experience: "体験サービス",
-          FashionBeauty: "ファッション・ビューティー",
-          pharmacy:"ドラッグストア",
-          electronicsstore:"家電量販店",
-          shopping:"ショッピング"
+          experience: "体験・レジャー",
+          fashionBeauty: "ファッション・ビューティー",
+          drugstore: "ドラッグストア",
+          electronics: "家電量販店",
+          shopping: "ショッピング"
         },
         areas: {
           shibuya: "東京・渋谷",
@@ -785,7 +787,8 @@
         pwPlaceholder: "Enter password",
         pwSubmit: "Unlock",
         pwError: "Incorrect password. Please try again.",
-        statusAvailable: "Available (One-time)",
+        statusAvailableOnce: "Available (One-time)",
+        statusAvailableDaily: "Available (Once daily, resets 0:00)",
         statusProgress: "In Progress",
         statusUsed: "Used",
         statusUnlimited: "Unlimited Use",
@@ -800,6 +803,7 @@
         phoneLabel: "Phone",
         usageTitle: "How to Use & Usage Status",
         onceNote: "*Valid once only. Show this screen to staff and tap the button to mark as Used (cannot be reset once marked Used).",
+        dailyNote: "*Valid once per day (automatically resets at 0:00). Show this screen to staff and tap the button.",
         unlimitedNote: "*Can be used multiple times. Simply present this screen to staff.",
         step1Btn: "Step 1: Start Using",
         step2Btn: "Step 2: Mark as Used",
@@ -831,7 +835,8 @@
         pwPlaceholder: "輸入密碼",
         pwSubmit: "解鎖",
         pwError: "密碼錯誤，請重新輸入。",
-        statusAvailable: "可使用（限一次）",
+        statusAvailableOnce: "可使用（限一次）",
+        statusAvailableDaily: "可使用（每日一次・0:00 重設）",
         statusProgress: "使用進行中",
         statusUsed: "已使用",
         statusUnlimited: "可重複使用",
@@ -846,6 +851,7 @@
         phoneLabel: "電話",
         usageTitle: "使用方式與紀錄",
         onceNote: "※限使用一次。向店員出示畫面並按下使用按鈕後將顯示為「已使用」（標記為已使用後無法重設）。",
+        dailyNote: "※每日可使用一次（每日 0:00 自動重設）。向店員出示畫面並按下使用按鈕。",
         unlimitedNote: "※可多次使用。請直接向店家或櫃檯出示本畫面。",
         step1Btn: "步驟 1：開始使用",
         step2Btn: "步驟 2：標記為已使用",
@@ -877,7 +883,8 @@
         pwPlaceholder: "비밀번호 입력",
         pwSubmit: "잠금 해제",
         pwError: "비밀번호가 올바르지 않습니다.",
-        statusAvailable: "사용 가능 (1회 한정)",
+        statusAvailableOnce: "사용 가능 (1회 한정)",
+        statusAvailableDaily: "사용 가능 (1일 1회·매일 0:00 초기화)",
         statusProgress: "사용 진행 중",
         statusUsed: "사용 완료",
         statusUnlimited: "횟수 제한 없이 이용 가능",
@@ -892,6 +899,7 @@
         phoneLabel: "전화번호",
         usageTitle: "이용 방법 및 기록",
         onceNote: "*1회만 사용 가능합니다. 직원에게 화면을 보여준 뒤 이용 버튼을 누르면 '사용 완료'가 됩니다(사용 완료 후에는 되돌릴 수 없습니다).",
+        dailyNote: "*1일 1회 이용 가능합니다(매일 0:00 자동 초기화). 직원에게 화면을 보여준 뒤 이용 버튼을 눌러 주세요.",
         unlimitedNote: "*여러 번 이용할 수 있습니다. 매장이나 접수처에 이 화면을 보여주세요.",
         step1Btn: "1단계: 이용 시작",
         step2Btn: "2단계: 사용 완료 처리",
@@ -926,9 +934,10 @@
 
     // =========================================================================
     // 2. クーポンデータ（日本語ソース）
+    // - areaKeys: ["shinjuku", "shibuya"] のように複数エリア指定可（単数 areaKey も互換対応）
+    // - usageLimit: "once"（1回限り・リセット不可）, "daily"（1日1回・毎日0:00自動リセット）, "unlimited"（何回でも利用可）
     // - image: 一覧カードサムネイル用（1200x750 推奨・cover表示）
     // - detailImage: 詳細モーダル最上部に元比率・見切れなし（contain表示）で出す画像（未設定なら image を使用）
-    // - usageLimit: "once"（1回限り・リセット不可） または "unlimited"（何回でも利用可）
     // - hideMap: true にすると住所があってもGoogleマップリンクを非表示
     // - lat / lng: 特定拠点がないチェーン店などは null 指定可
     // - bookingNote / bookingUrl: 事前予約や外部予約サイト誘導が必要な場合に設定
@@ -937,13 +946,13 @@
       {
         id: "cpn-01",
         categoryKey: "gourmet",
-        areaKey: "shibuya",
+        areaKeys: ["shibuya", "shinjuku"],
         usageLimit: "once",
         title: "【初回限定】お会計から20%OFF",
-        summary: "全メニュー対象！お得な割引クーポン",
+        summary: "渋谷・新宿の対象店舗で使える割引クーポン",
         description: "ご来店時にスタッフへ本画面をご提示ください。お会計総額から20%割引いたします。他の割引サービスとの併用はできません。",
         couponCode: "SHIBUYA20",
-        storeName: "BOP CAFE SHIBUYA",
+        storeName: "BOP CAFE SHIBUYA / SHINJUKU",
         address: "東京都渋谷区道玄坂1-2-3",
         hideMap: false,
         phone: "03-1234-5678",
@@ -956,14 +965,14 @@
       },
       {
         id: "cpn-02",
-        categoryKey: "gourmet",
-        areaKey: "shinjuku",
-        usageLimit: "unlimited",
-        title: "ドリンク1杯無料サービス",
-        summary: "全国の対象店舗でご利用いただけます",
-        description: "ご来店時に本画面をご提示ください。対象のソフトドリンクを1杯無料でご提供いたします。",
-        couponCode: "SHINJUKU-DRINK",
-        storeName: "ガーデンダイニング（対象全店）",
+        categoryKey: "drugstore",
+        areaKeys: ["shinjuku"],
+        usageLimit: "daily",
+        title: "免税＋追加割引クーポン（1日1回）",
+        summary: "毎日0:00にリセット！滞在中いつでも使いやすい特典",
+        description: "お会計時に本画面をご提示ください。毎日0:00にリセットされ、1日1回ご利用いただけます。",
+        couponCode: "DRUG-DAILY",
+        storeName: "ドラッグストア対象店舗",
         address: "全国の対象店舗",
         hideMap: true,
         phone: "",
@@ -977,7 +986,7 @@
       {
         id: "cpn-03",
         categoryKey: "experience",
-        areaKey: "shibuya",
+        areaKeys: ["shibuya"],
         usageLimit: "once",
         title: "ワークショップ体験 500円OFF",
         summary: "人気のものづくり体験がお得に楽しめる",
@@ -996,14 +1005,14 @@
       },
       {
         id: "cpn-04",
-        categoryKey: "experience",
-        areaKey: "umeda",
-        usageLimit: "once",
-        title: "施設入場料 100円引きクーポン",
-        summary: "当日窓口での入場チケットが割引",
-        description: "受付窓口にてクーポンコードまたは利用画面をご提示ください。大人・子どもチケットともに適用可能です。",
+        categoryKey: "shopping",
+        areaKeys: ["umeda"],
+        usageLimit: "unlimited",
+        title: "対象ショップ 100円引きクーポン",
+        summary: "期間中何度でも使えるお買い物クーポン",
+        description: "お会計時にクーポンコードまたは利用画面をご提示ください。対象商品に適用可能です。",
         couponCode: "UMEDA100",
-        storeName: "梅田ミュージアム",
+        storeName: "梅田ショッピングスポット",
         address: "大阪府大阪市北区梅田2-5-25",
         hideMap: false,
         phone: "06-1234-5678",
@@ -1017,7 +1026,7 @@
     ];
 
     // =========================================================================
-    // 3. アプリケーション状態
+    // 3. アプリケーション状態・利用記録（daily 0:00 自動リセット対応）
     // =========================================================================
     const state = {
       lang: "ja",
@@ -1030,6 +1039,14 @@
       translatedCache: {},
       unlimitedNoticeActive: false
     };
+
+    function getTodayKey() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
 
     function isUnlocked() {
       return sessionStorage.getItem(AUTH_STORAGE_KEY) === "true";
@@ -1048,18 +1065,47 @@
       }
     }
 
-    function setUsageStep(couponId, step) {
+    function getUsageEntry(couponId, usageLimit = "once") {
       const map = getUsageMap();
-      const prevStep = Number(map[couponId] || 0);
-      // 1回限り（"once"）はステップを戻せない（リセット不可）
-      const nextStep = Math.max(prevStep, Number(step));
-      map[couponId] = nextStep;
+      const raw = map[couponId];
+      const entry =
+        typeof raw === "object" && raw !== null
+          ? { step: Number(raw.step || 0), date: String(raw.date || "") }
+          : { step: Number(raw || 0), date: "" };
+
+      if (usageLimit === "daily") {
+        const today = getTodayKey();
+        if (entry.date !== today) {
+          return { step: 0, date: today };
+        }
+      }
+      return entry;
+    }
+
+    function setUsageStep(couponId, step, usageLimit = "once") {
+      const map = getUsageMap();
+      const today = getTodayKey();
+      const current = getUsageEntry(couponId, usageLimit);
+      const nextStep = Math.max(Number(current.step || 0), Number(step));
+      map[couponId] = {
+        step: nextStep,
+        date: today
+      };
       localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(map));
     }
 
-    function getUsageStep(couponId) {
-      const map = getUsageMap();
-      return Number(map[couponId] || 0);
+    function getUsageStep(couponId, usageLimit = "once") {
+      return Number(getUsageEntry(couponId, usageLimit).step || 0);
+    }
+
+    function getCouponAreaList(coupon) {
+      if (Array.isArray(coupon.areaKeys) && coupon.areaKeys.length > 0) {
+        return coupon.areaKeys;
+      }
+      if (coupon.areaKey) {
+        return [coupon.areaKey];
+      }
+      return [];
     }
 
     // =========================================================================
@@ -1156,7 +1202,7 @@
         typeof lat2 !== "number" ||
         typeof lon2 !== "number" ||
         !Number.isFinite(lat2) ||
-        !Number.isFinite(lng2Check(lon2))
+        !Number.isFinite(lon2)
       ) {
         return Infinity;
       }
@@ -1171,10 +1217,6 @@
           Math.sin(dLon / 2);
       const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
       return R * c;
-    }
-
-    function lng2Check(val) {
-      return Number.isFinite(val) ? val : NaN;
     }
 
     // =========================================================================
@@ -1281,14 +1323,17 @@
       if (coupon.usageLimit === "unlimited") {
         return { label: dict.statusUnlimited, cls: "tag-status-unlimited" };
       }
-      const step = getUsageStep(coupon.id);
+      const step = getUsageStep(coupon.id, coupon.usageLimit);
       if (step >= 2) {
         return { label: dict.statusUsed, cls: "tag-status-used" };
       }
       if (step === 1) {
         return { label: dict.statusProgress, cls: "tag-status-progress" };
       }
-      return { label: dict.statusAvailable, cls: "tag-status-available" };
+      if (coupon.usageLimit === "daily") {
+        return { label: dict.statusAvailableDaily, cls: "tag-status-available" };
+      }
+      return { label: dict.statusAvailableOnce, cls: "tag-status-available" };
     }
 
     function renderCoupons() {
@@ -1297,7 +1342,8 @@
 
       let list = COUPONS.filter((cp) => {
         const matchCat = state.selectedCategory === "all" || cp.categoryKey === state.selectedCategory;
-        const matchArea = state.selectedArea === "all" || cp.areaKey === state.selectedArea;
+        const areaList = getCouponAreaList(cp);
+        const matchArea = state.selectedArea === "all" || areaList.includes(state.selectedArea);
         return matchCat && matchArea;
       }).map((cp) => {
         const distKm =
@@ -1323,6 +1369,9 @@
       for (const item of list) {
         const cp = item.localized;
         const status = getStatusInfo(cp);
+        const areaList = getCouponAreaList(cp);
+        const areaLabels = areaList.map((k) => dict.areas[k] || k).join(" / ");
+
         const card = document.createElement("article");
         card.className = "coupon-card";
         card.tabIndex = 0;
@@ -1342,7 +1391,7 @@
             <div class="meta-tags">
               <span class="tag ${status.cls}">${escapeHtml(status.label)}</span>
               <span class="tag tag-meta">${escapeHtml(dict.categories[cp.categoryKey] || cp.categoryKey)}</span>
-              <span class="tag tag-meta">${escapeHtml(dict.areas[cp.areaKey] || cp.areaKey)}</span>
+              ${areaLabels ? `<span class="tag tag-meta">${escapeHtml(areaLabels)}</span>` : ""}
               ${distTag}
             </div>
             <h2 class="coupon-title">${escapeHtml(cp.title)}</h2>
@@ -1406,7 +1455,11 @@
       const dict = t();
       const status = getStatusInfo(cp);
       const isUnlimited = cp.usageLimit === "unlimited";
-      const currentStep = isUnlimited ? 0 : getUsageStep(cp.id);
+      const isDaily = cp.usageLimit === "daily";
+      const currentStep = isUnlimited ? 0 : getUsageStep(cp.id, cp.usageLimit);
+
+      const areaList = getCouponAreaList(cp);
+      const areaLabels = areaList.map((k) => dict.areas[k] || k).join(" / ");
 
       // 詳細モーダル最上部の画像（detailImage があればそちらを優先、なければ一覧用 image）
       const topImageSrc = cp.detailImage || cp.image;
@@ -1466,11 +1519,17 @@
         `
         : "";
 
+      const usageNoteText = isUnlimited
+        ? dict.unlimitedNote
+        : isDaily
+        ? dict.dailyNote
+        : dict.onceNote;
+
       const usageControlsHtml = isUnlimited
         ? `
           <div class="usage-box">
             <div class="usage-title">${escapeHtml(dict.usageTitle)}（${escapeHtml(status.label)}）</div>
-            <p class="usage-note">${escapeHtml(dict.unlimitedNote)}</p>
+            <p class="usage-note">${escapeHtml(usageNoteText)}</p>
             <div class="usage-actions">
               <button class="btn-confirm" type="button" id="unlimitedUseBtn">
                 ${escapeHtml(dict.unlimitedShowBtn)}
@@ -1486,7 +1545,7 @@
         : `
           <div class="usage-box">
             <div class="usage-title">${escapeHtml(dict.usageTitle)}（${escapeHtml(status.label)}）</div>
-            <p class="usage-note">${escapeHtml(dict.onceNote)}</p>
+            <p class="usage-note">${escapeHtml(usageNoteText)}</p>
             <div class="usage-actions">
               <button class="btn-primary" type="button" id="step1Btn" ${currentStep >= 1 ? "disabled" : ""}>
                 ${escapeHtml(dict.step1Btn)}
@@ -1504,7 +1563,7 @@
         <div class="meta-tags">
           <span class="tag ${status.cls}">${escapeHtml(status.label)}</span>
           <span class="tag tag-meta">${escapeHtml(dict.categories[cp.categoryKey] || cp.categoryKey)}</span>
-          <span class="tag tag-meta">${escapeHtml(dict.areas[cp.areaKey] || cp.areaKey)}</span>
+          ${areaLabels ? `<span class="tag tag-meta">${escapeHtml(areaLabels)}</span>` : ""}
         </div>
         <h2 class="modal-title" id="detailTitle">${escapeHtml(cp.title)}</h2>
         <p class="modal-desc">${escapeHtml(cp.description)}</p>
@@ -1557,13 +1616,13 @@
         });
       } else {
         document.getElementById("step1Btn").addEventListener("click", () => {
-          setUsageStep(cp.id, 1);
+          setUsageStep(cp.id, 1, cp.usageLimit);
           renderDetailModalContent();
           renderCoupons();
         });
 
         document.getElementById("step2Btn").addEventListener("click", () => {
-          setUsageStep(cp.id, 2);
+          setUsageStep(cp.id, 2, cp.usageLimit);
           renderDetailModalContent();
           renderCoupons();
         });
