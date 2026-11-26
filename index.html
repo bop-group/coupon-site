@@ -1,1345 +1,1577 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Special Coupons</title>
-<style>
-  :root {
-    --bg: #f4f6f9;
-    --card: #ffffff;
-    --text: #222222;
-    --muted: #666666;
-    --primary: #1677ff;
-    --danger: #ff4d4f;
-    --border: #d9dfe6;
-  }
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Hiragino Sans", "Yu Gothic", "Noto Sans CJK JP", "Noto Sans CJK TC", "Noto Sans CJK KR", sans-serif;
-    background-color: var(--bg);
-    margin: 0;
-    padding: 14px 14px 44px;
-    color: var(--text);
-  }
-  .container {
-    max-width: 960px;
-    margin: 0 auto;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>限定クーポン一覧 | Inbound Coupon Portal</title>
+  <style>
+    :root {
+      --bg-page: #f4f6f9;
+      --bg-surface: #ffffff;
+      --bg-subtle: #eef2f7;
+      --text-main: #18202c;
+      --text-muted: #5c687a;
+      --accent: #0f62fe;
+      --accent-hover: #0043ce;
+      --accent-soft: #e8f0fe;
+      --success: #0e7a47;
+      --success-soft: #e6f6ee;
+      --warning: #9a5b00;
+      --warning-soft: #fff4e0;
+      --border: #dde3ec;
+      --shadow-sm: 0 2px 8px rgba(16, 24, 40, 0.05);
+      --shadow-md: 0 10px 28px rgba(16, 24, 40, 0.12);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
 
-  /* 言語切り替えバー */
-  .lang-bar {
-    display: flex;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 10px;
-  }
-  .lang-btn {
-    border: 1px solid var(--border);
-    background: #fff;
-    color: var(--text);
-    padding: 6px 11px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  .lang-btn.active {
-    background: #1f2937;
-    color: #fff;
-    border-color: #1f2937;
-  }
+    * {
+      box-sizing: border-box;
+    }
 
-  .header {
-    text-align: center;
-    margin: 4px auto 18px;
-    max-width: 780px;
-  }
-  .header h1 {
-    font-size: 22px;
-    margin: 0 0 6px;
-  }
-  .header p {
-    font-size: 13px;
-    color: var(--muted);
-    margin: 0;
-    line-height: 1.6;
-    white-space: pre-line;
-  }
-  .status-bar {
-    display: inline-block;
-    margin-top: 10px;
-    font-size: 12px;
-    padding: 5px 12px;
-    border-radius: 999px;
-    background: #e9ecef;
-    color: #495057;
-  }
-  .status-bar.unlocked {
-    background: #d4edda;
-    color: #155724;
-    font-weight: bold;
-  }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Hiragino Sans", "Noto Sans JP", "Noto Sans CJK TC", "Noto Sans CJK KR", sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.6;
+    }
 
-  /* 絞り込み・GPSコントロールパネル */
-  .filter-panel {
-    background: var(--card);
-    border-radius: 14px;
-    padding: 14px 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-  }
-  .filter-group {
-    margin-bottom: 12px;
-  }
-  .filter-group:last-child {
-    margin-bottom: 0;
-  }
-  .filter-label {
-    font-size: 12px;
-    font-weight: bold;
-    color: var(--muted);
-    margin-bottom: 6px;
-    display: block;
-  }
-  .chip-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-  }
-  .chip-btn {
-    border: 1px solid var(--border);
-    background: #fff;
-    color: var(--text);
-    padding: 7px 13px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  .chip-btn:hover {
-    border-color: var(--primary);
-    color: var(--primary);
-  }
-  .chip-btn.active {
-    background: var(--primary);
-    color: #fff;
-    border-color: var(--primary);
-  }
-  .gps-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    align-items: center;
-    padding-top: 10px;
-    border-top: 1px solid #eef1f5;
-  }
-  .gps-btn {
-    background: #0f766e;
-    color: #fff;
-    border: none;
-    padding: 8px 14px;
-    border-radius: 999px;
-    font-size: 13px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  .gps-btn:hover {
-    opacity: 0.92;
-  }
-  .gps-reset-btn {
-    background: #eef1f5;
-    color: #333;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 999px;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-  }
-  .gps-status {
-    font-size: 12px;
-    color: var(--muted);
-  }
+    a {
+      color: var(--accent);
+    }
 
-  /* クーポン一覧グリッド */
-  .coupon-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(275px, 1fr));
-    gap: 16px;
-  }
-  .coupon-card {
-    background: var(--card);
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0,0,0,0.07);
-    cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
-    display: flex;
-    flex-direction: column;
-  }
-  .coupon-card:hover {
-    box-shadow: 0 6px 16px rgba(0,0,0,0.11);
-  }
-  .coupon-card:active {
-    transform: scale(0.98);
-  }
-  .coupon-card img {
-    width: 100%;
-    height: 160px;
-    object-fit: cover;
-    display: block;
-    background: #e9ecef;
-  }
-  .coupon-info {
-    padding: 14px 16px 16px;
-    flex: 1;
-  }
-  .meta-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-  .badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: bold;
-    padding: 3px 8px;
-    border-radius: 5px;
-  }
-  .badge-available {
-    background: var(--danger);
-    color: #fff;
-  }
-  .badge-used {
-    background: #8c8c8c;
-    color: #fff;
-  }
-  .badge-cat {
-    background: #eef4ff;
-    color: var(--primary);
-  }
-  .badge-area {
-    background: #f0fdf4;
-    color: #15803d;
-  }
-  .badge-dist {
-    background: #fff7ed;
-    color: #c2410c;
-  }
-  .coupon-title {
-    font-size: 16px;
-    font-weight: bold;
-    margin: 0 0 6px;
-    line-height: 1.4;
-  }
-  .coupon-desc {
-    font-size: 13px;
-    color: var(--muted);
-    margin: 0;
-    line-height: 1.5;
-  }
-  .empty-msg {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 34px 16px;
-    background: var(--card);
-    border-radius: 12px;
-    color: var(--muted);
-    font-size: 14px;
-  }
+    button {
+      font-family: inherit;
+      cursor: pointer;
+    }
 
-  /* モーダル */
-  .modal-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-    padding: 16px;
-  }
-  .modal-box {
-    background: var(--card);
-    border-radius: 16px;
-    width: 100%;
-    max-width: 420px;
-    padding: 24px 20px;
-    text-align: center;
-    position: relative;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.22);
-    max-height: 90vh;
-    overflow-y: auto;
-  }
-  .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 14px;
-    font-size: 26px;
-    line-height: 1;
-    color: #888;
-    cursor: pointer;
-    border: none;
-    background: none;
-  }
-  .pw-input {
-    width: 84%;
-    padding: 11px;
-    font-size: 16px;
-    border: 2px solid #d9d9d9;
-    border-radius: 8px;
-    margin: 12px 0;
-    text-align: center;
-  }
-  .pw-input:focus {
-    outline: none;
-    border-color: var(--primary);
-  }
-  .btn {
-    background: var(--primary);
-    color: #fff;
-    border: none;
-    padding: 12px 18px;
-    font-size: 14px;
-    font-weight: bold;
-    border-radius: 8px;
-    cursor: pointer;
-    width: 90%;
-  }
-  .btn:hover {
-    opacity: 0.93;
-  }
-  .btn-use {
-    background: var(--danger);
-    margin-top: 16px;
-  }
-  .btn-used {
-    background: #bfbfbf;
-    cursor: not-allowed;
-    margin-top: 16px;
-  }
-  .error-msg {
-    color: #cf1322;
-    font-size: 13px;
-    margin-top: 8px;
-    display: none;
-  }
-  .detail-img {
-    width: 100%;
-    height: 155px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 12px;
-    background: #e9ecef;
-  }
-  .detail-code-box {
-    background: #fffbeb;
-    border: 1px dashed #f59e0b;
-    border-radius: 10px;
-    padding: 10px 12px;
-    margin-top: 12px;
-    text-align: center;
-  }
-  .detail-code-label {
-    font-size: 11px;
-    font-weight: bold;
-    color: #b45309;
-    display: block;
-    margin-bottom: 2px;
-  }
-  .detail-code-value {
-    font-size: 16px;
-    font-weight: bold;
-    letter-spacing: 0.08em;
-    color: #111827;
-    user-select: all;
-  }
-  .detail-store-box {
-    background: #f0f7ff;
-    border: 1px solid #d6e8ff;
-    border-radius: 10px;
-    padding: 11px 12px;
-    margin-top: 10px;
-    text-align: left;
-    font-size: 12.5px;
-    line-height: 1.6;
-  }
-  .store-row {
-    display: flex;
-    gap: 6px;
-    align-items: flex-start;
-    margin-bottom: 6px;
-  }
-  .store-row:last-child {
-    margin-bottom: 0;
-  }
-  .store-label {
-    font-weight: bold;
-    color: #374151;
-    flex-shrink: 0;
-  }
-  .store-link {
-    color: var(--primary);
-    font-weight: bold;
-    text-decoration: underline;
-    word-break: break-word;
-  }
-  .store-phone-link {
-    color: #111827;
-    font-weight: bold;
-    text-decoration: none;
-  }
-  .store-phone-link:hover {
-    text-decoration: underline;
-  }
-  .detail-terms {
-    background: #f6f7f9;
-    padding: 11px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    color: #555;
-    text-align: left;
-    margin-top: 10px;
-    white-space: pre-line;
-    line-height: 1.6;
-  }
-</style>
+    .container {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 20px 16px 64px;
+    }
+
+    /* Top bar & Language Switcher */
+    .topbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .lang-btn {
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+
+    .lang-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .lang-btn.active {
+      background: var(--text-main);
+      color: #ffffff;
+      border-color: var(--text-main);
+    }
+
+    /* Header */
+    .hero {
+      text-align: center;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px 20px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 18px;
+    }
+
+    .hero-title {
+      margin: 0 0 8px;
+      font-size: clamp(22px, 4vw, 32px);
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-subtitle {
+      margin: 0 auto 14px;
+      max-width: 720px;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .auth-status-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .auth-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .auth-badge.unlocked {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .auth-badge.locked {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+
+    .btn-secondary-sm {
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .btn-secondary-sm:hover {
+      background: var(--bg-subtle);
+    }
+
+    /* Filter Panel */
+    .filter-panel {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      box-shadow: var(--shadow-sm);
+      margin-bottom: 22px;
+    }
+
+    .filter-group {
+      margin-bottom: 14px;
+    }
+
+    .filter-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .filter-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .chip-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-main);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .chip.active {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+
+    .sort-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding-top: 6px;
+      border-top: 1px solid var(--bg-subtle);
+    }
+
+    .btn-sort {
+      border: none;
+      background: var(--success);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-sort:hover {
+      filter: brightness(0.95);
+    }
+
+    .btn-sort.active {
+      background: #085530;
+      box-shadow: 0 0 0 3px rgba(14, 122, 71, 0.22);
+    }
+
+    .sort-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .translation-banner {
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--accent);
+      min-height: 18px;
+    }
+
+    /* Coupon Grid */
+    .coupon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .coupon-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.16s ease, box-shadow 0.16s ease;
+      cursor: pointer;
+    }
+
+    .coupon-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    /* 1200x750 = 1.6 : 1 ratio */
+    .coupon-thumb-wrap {
+      width: 100%;
+      aspect-ratio: 1200 / 750;
+      background: var(--bg-subtle);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .coupon-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .coupon-body {
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .tag {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+    }
+
+    .tag-status-available {
+      background: var(--success-soft);
+      color: var(--success);
+    }
+
+    .tag-status-progress {
+      background: var(--warning-soft);
+      color: var(--warning);
+    }
+
+    .tag-status-used {
+      background: #e9edf3;
+      color: #4b5565;
+    }
+
+    .tag-meta {
+      background: var(--bg-subtle);
+      color: var(--text-main);
+    }
+
+    .tag-distance {
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+
+    .coupon-title {
+      margin: 2px 0 0;
+      font-size: 17px;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .coupon-summary {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .coupon-store {
+      margin-top: auto;
+      padding-top: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .empty-state {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 48px 20px;
+      background: var(--bg-surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+    }
+
+    /* Modal Backdrop & Dialog */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.58);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 1000;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-dialog {
+      width: 100%;
+      max-width: 640px;
+      max-height: 90vh;
+      overflow-y: auto;
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-md);
+      padding: 22px;
+      position: relative;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      width: 34px;
+      height: 34px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      font-size: 18px;
+      line-height: 1;
+      color: var(--text-main);
+    }
+
+    .modal-image-wrap {
+      width: 100%;
+      aspect-ratio: 1200 / 750;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      background: var(--bg-subtle);
+      margin-bottom: 14px;
+    }
+
+    .modal-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .modal-title {
+      margin: 6px 0 8px;
+      font-size: 21px;
+      font-weight: 800;
+      padding-right: 36px;
+    }
+
+    .modal-desc {
+      margin: 0 0 16px;
+      font-size: 14px;
+      color: var(--text-main);
+      white-space: pre-line;
+    }
+
+    .code-box {
+      background: var(--accent-soft);
+      border: 1px solid #bfd4fe;
+      border-radius: var(--radius-md);
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .code-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--accent);
+    }
+
+    .code-value {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-main);
+      letter-spacing: 0.04em;
+    }
+
+    .btn-copy {
+      border: none;
+      background: var(--accent);
+      color: #ffffff;
+      padding: 7px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .booking-box {
+      background: #f5f9ff;
+      border: 1px solid #cfe0fc;
+      border-left: 4px solid var(--accent);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      margin-bottom: 16px;
+    }
+
+    .booking-heading {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--accent);
+      margin: 0 0 6px;
+    }
+
+    .booking-note {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: var(--text-main);
+      white-space: pre-line;
+    }
+
+    .booking-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--accent);
+      color: #ffffff;
+      text-decoration: none;
+      padding: 9px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .booking-link:hover {
+      background: var(--accent-hover);
+    }
+
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 18px;
+      font-size: 13px;
+    }
+
+    .info-table th,
+    .info-table td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .info-table th {
+      width: 110px;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+
+    .usage-box {
+      background: var(--bg-subtle);
+      border-radius: var(--radius-md);
+      padding: 14px;
+    }
+
+    .usage-title {
+      font-size: 13px;
+      font-weight: 800;
+      margin: 0 0 10px;
+    }
+
+    .usage-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn-primary {
+      border: none;
+      background: var(--accent);
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+    }
+
+    .btn-confirm {
+      border: none;
+      background: var(--success);
+      color: #ffffff;
+      padding: 10px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .btn-reset {
+      border: 1px solid var(--border);
+      background: var(--bg-surface);
+      color: var(--text-muted);
+      padding: 10px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .password-input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      margin: 10px 0;
+    }
+
+    .error-text {
+      color: #c62828;
+      font-size: 13px;
+      font-weight: 700;
+      min-height: 20px;
+      margin-bottom: 8px;
+    }
+  </style>
 </head>
 <body>
-
-<div class="container">
-  <!-- 言語切り替え -->
-  <div class="lang-bar" id="langBar">
-    <button type="button" class="lang-btn" data-lang="ja" onclick="setLanguage('ja', true)">日本語</button>
-    <button type="button" class="lang-btn" data-lang="en" onclick="setLanguage('en', true)">English</button>
-    <button type="button" class="lang-btn" data-lang="zh" onclick="setLanguage('zh', true)">繁體中文</button>
-    <button type="button" class="lang-btn" data-lang="ko" onclick="setLanguage('ko', true)">한국어</button>
-  </div>
-
-  <div class="header">
-    <h1 id="siteTitle"></h1>
-    <p id="siteSubtitle"></p>
-    <div id="unlockStatus" class="status-bar"></div>
-  </div>
-
-  <!-- 絞り込み・GPSエリア -->
-  <div class="filter-panel">
-    <div class="filter-group">
-      <span class="filter-label" id="labelCategory"></span>
-      <div class="chip-row" id="categoryBar"></div>
+  <div class="container">
+    <div class="topbar" id="langSwitcher">
+      <button class="lang-btn active" data-lang="ja">日本語</button>
+      <button class="lang-btn" data-lang="en">English</button>
+      <button class="lang-btn" data-lang="zh-TW">繁體中文</button>
+      <button class="lang-btn" data-lang="ko">한국어</button>
     </div>
 
-    <div class="filter-group">
-      <span class="filter-label" id="labelArea"></span>
-      <div class="chip-row" id="areaBar"></div>
-    </div>
-
-    <div class="gps-row">
-      <button type="button" class="gps-btn" id="gpsBtn" onclick="sortByGPS()"></button>
-      <button type="button" class="gps-reset-btn" id="gpsResetBtn" onclick="resetGPS()" style="display:none;"></button>
-      <span class="gps-status" id="gpsStatus"></span>
-    </div>
-  </div>
-
-  <!-- クーポン一覧 -->
-  <div class="coupon-grid" id="couponList"></div>
-</div>
-
-<!-- パスワード入力モーダル -->
-<div class="modal-overlay" id="pwModal">
-  <div class="modal-box">
-    <button type="button" class="close-btn" onclick="closeModal('pwModal')" aria-label="Close">&times;</button>
-    <h3 id="pwTitle" style="margin-top:0;"></h3>
-    <p id="pwDesc" style="font-size:13px; color:#666; margin-bottom:4px;"></p>
-    <input type="password" id="pwInput" class="pw-input" onkeydown="if(event.key==='Enter') checkPassword()">
-    <br>
-    <button type="button" class="btn" id="pwSubmitBtn" onclick="checkPassword()"></button>
-    <p class="error-msg" id="pwError"></p>
-  </div>
-</div>
-
-<!-- クーポン詳細・利用モーダル -->
-<div class="modal-overlay" id="detailModal">
-  <div class="modal-box">
-    <button type="button" class="close-btn" onclick="closeModal('detailModal')" aria-label="Close">&times;</button>
-    <img id="detailImg" class="detail-img" src="" alt="">
-    <div class="meta-row" style="justify-content:center; margin-bottom:8px;">
-      <span id="detailCategory" class="badge badge-cat"></span>
-      <span id="detailArea" class="badge badge-area"></span>
-    </div>
-    <h3 id="detailTitle" style="margin:0 0 8px; font-size:18px;"></h3>
-    <p id="detailDesc" style="font-size:14px; color:#333; margin:0; line-height:1.6;"></p>
-
-    <!-- クーポン番号（設定されている場合のみ表示） -->
-    <div class="detail-code-box" id="detailCodeBox" style="display:none;">
-      <span class="detail-code-label" id="labelCouponCode"></span>
-      <span class="detail-code-value" id="detailCouponCode"></span>
-    </div>
-
-    <!-- 店舗情報（設定されている場合のみ表示） -->
-    <div class="detail-store-box" id="detailStoreBox" style="display:none;">
-      <div class="store-row" id="storeNameRow" style="display:none;">
-        <span class="store-label" id="labelStoreName"></span>
-        <span id="detailStoreName"></span>
+    <header class="hero">
+      <h1 class="hero-title" id="heroTitle">限定クーポン一覧</h1>
+      <p class="hero-subtitle" id="heroSubtitle">
+        言語・カテゴリ・エリアで絞り込めます。クーポンをタップしてパスワードを入力すると詳細が開きます。パスワードはJAPAN QUALITY SIMをご購入後、メール本文に記載しております。
+      </p>
+      <div class="auth-status-row">
+        <span class="auth-badge locked" id="authBadge">パスワード未解除</span>
+        <button class="btn-secondary-sm" id="openPasswordBtn" type="button">パスワード入力</button>
       </div>
-      <div class="store-row" id="storeAddressRow" style="display:none;">
-        <span class="store-label" id="labelStoreAddress"></span>
-        <a id="detailStoreAddressLink" class="store-link" href="#" target="_blank" rel="noopener noreferrer"></a>
-      </div>
-      <div class="store-row" id="storePhoneRow" style="display:none;">
-        <span class="store-label" id="labelStorePhone"></span>
-        <a id="detailStorePhoneLink" class="store-phone-link" href="#"></a>
-      </div>
-    </div>
+    </header>
 
-    <div class="detail-terms" id="detailTerms"></div>
-    <button type="button" id="useBtn" class="btn btn-use" onclick="useCoupon()"></button>
-    <p id="staffNote" style="font-size:11px; color:#888; margin-top:8px;"></p>
+    <section class="filter-panel" aria-label="絞り込み・並び替え">
+      <div class="filter-group">
+        <div class="filter-label" id="categoryLabel">カテゴリ</div>
+        <div class="chip-list" id="categoryChips"></div>
+      </div>
+
+      <div class="filter-group">
+        <div class="filter-label" id="areaLabel">エリア</div>
+        <div class="chip-list" id="areaChips"></div>
+      </div>
+
+      <div class="sort-row">
+        <button class="btn-sort" id="sortByDistanceBtn" type="button">
+          <span>現在地から近い順に並べる</span>
+        </button>
+        <span class="sort-hint" id="sortHint">※位置情報を許可すると近いクーポン順に表示できます</span>
+      </div>
+
+      <div class="translation-banner" id="translationBanner"></div>
+    </section>
+
+    <main class="coupon-grid" id="couponGrid"></main>
   </div>
-</div>
 
-<script>
-(function () {
-  // =========================================================
-  // ★日本語（ja）を基準に編集・追加できます（改行は \n、末尾カンマに注意）★
-  // =========================================================
-  const SHARED_PASSWORD = "0710";
+  <!-- Password Modal -->
+  <div class="modal-backdrop" id="passwordModal" role="dialog" aria-modal="true" aria-labelledby="pwModalTitle">
+    <div class="modal-dialog" style="max-width: 440px;">
+      <button class="modal-close" id="closePasswordModal" type="button" aria-label="閉じる">&times;</button>
+      <h2 class="modal-title" id="pwModalTitle">クーポン詳細のロック解除</h2>
+      <p class="coupon-summary" id="pwModalDesc">メールに記載の共有パスワードを入力してください。</p>
+      <form id="passwordForm">
+        <input class="password-input" type="password" id="passwordInput" autocomplete="current-password" placeholder="パスワードを入力" required />
+        <div class="error-text" id="passwordError"></div>
+        <button class="btn-primary" type="submit" id="pwSubmitBtn" style="width: 100%;">解除する</button>
+      </form>
+    </div>
+  </div>
 
-  const I18N = {
-    ja: {
-      pageTitle: "限定クーポン一覧",
-      siteTitle: "🎁 限定クーポン一覧 🎁",
-      siteSubtitle: "言語・カテゴリ・エリアで絞り込めます。クーポンをタップしてパスワードを入力すると詳細が開きます。\nパスワードはJAPAN QUALITY SIM を購入後、メール本文に記載しております。",
-      lockedStatus: "🔒 パスワード未解除",
-      unlockedStatus: "🔓 パスワード解除済み（全クーポン利用可能）",
-      labelCategory: "カテゴリ",
-      labelArea: "エリア",
-      allCategories: "全カテゴリ",
-      allAreas: "全エリア",
-      gpsBtn: "📍 現在地から近い順に並べる",
-      gpsResetBtn: "並び順を戻す",
-      gpsIdle: "※位置情報を許可すると近いクーポン順に表示できます",
-      gpsLoading: "現在地を取得中...",
-      gpsSorted: "📍 現在地から近い順に並べ替えました",
-      gpsError: "位置情報が取得できませんでした（許可設定や通信状況をご確認ください）。",
-      gpsUnsupported: "お使いのブラウザでは位置情報を利用できません。",
-      available: "利用可能",
-      used: "使用済み",
-      empty: "条件に一致するクーポンは現在ありません。",
-      pwTitle: "パスワード入力",
-      pwDesc: "一度入力すると、他のクーポンも解除されます",
-      pwPlaceholder: "パスワードを入力",
-      pwSubmitBtn: "ロックを解除する",
-      pwError: "パスワードが正しくありません",
-      couponCodeLabel: "クーポン番号",
-      storeNameLabel: "店舗名：",
-      addressLabel: "住所（地図）：",
-      phoneLabel: "電話番号：",
-      useBtn: "クーポンを使用する（スタッフ提示）",
-      confirmUseBtn: "本当に使用済みにしますか？（もう一度タップで確定）",
-      alreadyUsedBtn: "このクーポンは使用済みです",
-      staffNote: "※お会計時にスタッフへこの画面をお見せください",
-      categories: {
-        food: "飲食店",
-        experience: "体験サービス",
-        ticket: "入場券",
-        goods: "雑貨"
+  <!-- Coupon Detail Modal -->
+  <div class="modal-backdrop" id="detailModal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+    <div class="modal-dialog">
+      <button class="modal-close" id="closeDetailModal" type="button" aria-label="閉じる">&times;</button>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. 基本設定・多言語辞書（日本語ソース）
+    // =========================================================================
+    const SHARED_PASSWORD = "BOP2026"; // 必要に応じて変更してください
+    const AUTH_STORAGE_KEY = "coupon_site_unlocked_v1";
+    const USAGE_STORAGE_KEY = "coupon_site_usage_v1";
+    const TRANSLATION_CACHE_PREFIX = "coupon_site_tr_v1_";
+
+    const SUPPORTED_LANGS = ["ja", "en", "zh-TW", "ko"];
+    const MYMEMORY_LANG_MAP = {
+      "en": "en",
+      "zh-TW": "zh-TW",
+      "ko": "ko"
+    };
+
+    const I18N = {
+      ja: {
+        title: "限定クーポン一覧",
+        subtitle: "言語・カテゴリ・エリアで絞り込めます。クーポンをタップしてパスワードを入力すると詳細が開きます。パスワードはJAPAN QUALITY SIMをご購入後、メール本文に記載しております。",
+        categoryLabel: "カテゴリ",
+        areaLabel: "エリア",
+        allCategories: "全カテゴリ",
+        allAreas: "全エリア",
+        sortByDistance: "現在地から近い順に並べる",
+        sortActive: "現在地から近い順（解除するには再クリック）",
+        sortHint: "※位置情報を許可すると近いクーポン順に表示できます",
+        lockedBadge: "パスワード未解除",
+        unlockedBadge: "パスワード解除済み（全クーポン利用可能）",
+        openPasswordBtn: "パスワード入力",
+        pwModalTitle: "クーポン詳細のロック解除",
+        pwModalDesc: "メールに記載の共有パスワードを入力してください。",
+        pwPlaceholder: "パスワードを入力",
+        pwSubmit: "解除する",
+        pwError: "パスワードが正しくありません。",
+        statusAvailable: "利用可能",
+        statusProgress: "利用手続き中",
+        statusUsed: "利用済み",
+        couponCodeLabel: "クーポンコード",
+        copyCode: "コードをコピー",
+        copiedCode: "コピーしました",
+        bookingTitle: "事前予約・コード利用のご案内",
+        openBookingSite: "予約サイトを開く",
+        storeLabel: "店舗・施設名",
+        addressLabel: "住所・地図",
+        openMap: "Googleマップで見る",
+        phoneLabel: "電話番号",
+        usageTitle: "利用記録（2ステップ）",
+        step1Btn: "ステップ1：利用を開始する",
+        step2Btn: "ステップ2：利用を完了する",
+        resetBtn: "利用記録をリセット",
+        noCoupons: "条件に一致するクーポンが見つかりませんでした。",
+        translating: "選択された言語に自動翻訳しています...",
+        translationNotice: "※一部テキストは自動翻訳（MyMemory）を使用しています。",
+        geoUnsupported: "お使いのブラウザは位置情報に対応していません。",
+        geoDenied: "位置情報の利用が許可されなかったため、標準順で表示しています。",
+        categories: {
+          gourmet: "飲食店",
+          experience: "体験サービス",
+          admission: "入場券",
+          goods: "雑貨"
+        },
+        areas: {
+          shibuya: "東京・渋谷",
+          shinjuku: "東京・新宿",
+          asakusa: "東京・浅草",
+          umeda: "大阪・梅田"
+        }
       },
-      areas: {
-        shibuya: "東京・渋谷",
-        shinjuku: "東京・新宿",
-        asakusa: "東京・浅草",
-        umeda: "大阪・梅田"
+      en: {
+        title: "Exclusive Coupons",
+        subtitle: "Filter by language, category, or area. Tap a coupon and enter the shared password sent in your JAPAN QUALITY SIM confirmation email to view details.",
+        categoryLabel: "Category",
+        areaLabel: "Area",
+        allCategories: "All Categories",
+        allAreas: "All Areas",
+        sortByDistance: "Sort by Nearest",
+        sortActive: "Sorted by Nearest (Click again to reset)",
+        sortHint: "*Allow location access to sort coupons from nearest to farthest",
+        lockedBadge: "Locked",
+        unlockedBadge: "Unlocked (All coupons available)",
+        openPasswordBtn: "Enter Password",
+        pwModalTitle: "Unlock Coupon Details",
+        pwModalDesc: "Please enter the shared password from your email.",
+        pwPlaceholder: "Enter password",
+        pwSubmit: "Unlock",
+        pwError: "Incorrect password. Please try again.",
+        statusAvailable: "Available",
+        statusProgress: "In Progress",
+        statusUsed: "Used",
+        couponCodeLabel: "Coupon Code",
+        copyCode: "Copy Code",
+        copiedCode: "Copied",
+        bookingTitle: "Advance Reservation & Code Instructions",
+        openBookingSite: "Open Booking Site",
+        storeLabel: "Venue / Store",
+        addressLabel: "Address & Map",
+        openMap: "Open in Google Maps",
+        phoneLabel: "Phone",
+        usageTitle: "Usage Tracker (2 Steps)",
+        step1Btn: "Step 1: Start Using",
+        step2Btn: "Step 2: Complete Usage",
+        resetBtn: "Reset Usage",
+        noCoupons: "No coupons match your selected filters.",
+        translating: "Auto-translating content...",
+        translationNotice: "*Some text is auto-translated via MyMemory.",
+        geoUnsupported: "Geolocation is not supported by your browser.",
+        geoDenied: "Location permission was denied. Showing default order.",
+        categories: {},
+        areas: {}
+      },
+      "zh-TW": {
+        title: "限定優惠券一覽",
+        subtitle: "可依語言、類別與地區篩選。點擊優惠券並輸入 JAPAN QUALITY SIM 購買確認信中的共用密碼即可查看詳情。",
+        categoryLabel: "類別",
+        areaLabel: "地區",
+        allCategories: "全部類別",
+        allAreas: "全部地區",
+        sortByDistance: "依距離由近到遠排序",
+        sortActive: "目前已依距離排序（再次點擊可取消）",
+        sortHint: "※允許定位後即可依目前位置由近到遠顯示",
+        lockedBadge: "尚未解鎖",
+        unlockedBadge: "已解鎖（可使用所有優惠券）",
+        openPasswordBtn: "輸入密碼",
+        pwModalTitle: "解鎖優惠券詳情",
+        pwModalDesc: "請輸入電子郵件中記載的共用密碼。",
+        pwPlaceholder: "輸入密碼",
+        pwSubmit: "解鎖",
+        pwError: "密碼錯誤，請重新輸入。",
+        statusAvailable: "可使用",
+        statusProgress: "使用進行中",
+        statusUsed: "已使用",
+        couponCodeLabel: "優惠代碼",
+        copyCode: "複製代碼",
+        copiedCode: "已複製",
+        bookingTitle: "事前預約與代碼使用說明",
+        openBookingSite: "前往預約網站",
+        storeLabel: "店家／設施名稱",
+        addressLabel: "地址／地圖",
+        openMap: "在 Google 地圖中開啟",
+        phoneLabel: "電話",
+        usageTitle: "使用紀錄（兩步驟）",
+        step1Btn: "步驟 1：開始使用",
+        step2Btn: "步驟 2：完成使用",
+        resetBtn: "重設使用紀錄",
+        noCoupons: "找不到符合條件的優惠券。",
+        translating: "正在自動翻譯內容...",
+        translationNotice: "*部分內容由 MyMemory 自動翻譯。",
+        geoUnsupported: "您的瀏覽器不支援定位功能。",
+        geoDenied: "未取得定位權限，改以預設順序顯示。",
+        categories: {},
+        areas: {}
+      },
+      ko: {
+        title: "한정 쿠폰 목록",
+        subtitle: "언어·카테고리·지역별로 필터링할 수 있습니다. 쿠폰을 탭한 뒤 JAPAN QUALITY SIM 구매 안내 메일의 비밀번호를 입력하면 상세 내용이 열립니다.",
+        categoryLabel: "카테고리",
+        areaLabel: "지역",
+        allCategories: "전체 카테고리",
+        allAreas: "전체 지역",
+        sortByDistance: "현재 위치에서 가까운 순",
+        sortActive: "가까운 순 정렬 중 (다시 누르면 해제)",
+        sortHint: "*위치 정보를 허용하면 가까운 쿠폰 순으로 표시됩니다",
+        lockedBadge: "잠김",
+        unlockedBadge: "잠금 해제됨 (모든 쿠폰 이용 가능)",
+        openPasswordBtn: "비밀번호 입력",
+        pwModalTitle: "쿠폰 상세 잠금 해제",
+        pwModalDesc: "메일에 안내된 공용 비밀번호를 입력해 주세요.",
+        pwPlaceholder: "비밀번호 입력",
+        pwSubmit: "잠금 해제",
+        pwError: "비밀번호가 올바르지 않습니다.",
+        statusAvailable: "사용 가능",
+        statusProgress: "사용 진행 중",
+        statusUsed: "사용 완료",
+        couponCodeLabel: "쿠폰 코드",
+        copyCode: "코드 복사",
+        copiedCode: "복사됨",
+        bookingTitle: "사전 예약 및 코드 이용 안내",
+        openBookingSite: "예약 사이트 열기",
+        storeLabel: "매장·시설명",
+        addressLabel: "주소·지도",
+        openMap: "Google 지도에서 보기",
+        phoneLabel: "전화번호",
+        usageTitle: "이용 기록 (2단계)",
+        step1Btn: "1단계: 이용 시작",
+        step2Btn: "2단계: 이용 완료",
+        resetBtn: "이용 기록 초기화",
+        noCoupons: "선택한 조건에 맞는 쿠폰이 없습니다.",
+        translating: "선택한 언어로 자동 번역 중입니다...",
+        translationNotice: "*일부 텍스트는 MyMemory 자동 번역이 적용되었습니다.",
+        geoUnsupported: "브라우저에서 위치 정보를 지원하지 않습니다.",
+        geoDenied: "위치 권한이 거부되어 기본 순서로 표시합니다.",
+        categories: {},
+        areas: {}
       }
-    },
-    en: {
-      pageTitle: "Exclusive Coupons",
-      siteTitle: "🎁 Exclusive Coupons",
-      siteSubtitle: "Filter by language, category, or area. Tap a coupon and enter the password to view details.\nThe password is included in your email after purchasing JAPAN QUALITY SIM.",
-      lockedStatus: "🔒 Locked",
-      unlockedStatus: "🔓 Unlocked (All coupons available)",
-      labelCategory: "Category",
-      labelArea: "Area",
-      allCategories: "All Categories",
-      allAreas: "All Areas",
-      gpsBtn: "📍 Sort by Nearest",
-      gpsResetBtn: "Reset Order",
-      gpsIdle: "* Allow location access to sort coupons by distance",
-      gpsLoading: "Getting your location...",
-      gpsSorted: "📍 Sorted from nearest to you",
-      gpsError: "Could not get location. Please check your browser permissions.",
-      gpsUnsupported: "Location services are not supported on this browser.",
-      available: "Available",
-      used: "Used",
-      empty: "No coupons match the selected filters.",
-      pwTitle: "Enter Password",
-      pwDesc: "Once unlocked, other coupons will open automatically",
-      pwPlaceholder: "Enter password",
-      pwSubmitBtn: "Unlock Coupons",
-      pwError: "Incorrect password",
-      couponCodeLabel: "Coupon Code",
-      storeNameLabel: "Store:",
-      addressLabel: "Address (Map):",
-      phoneLabel: "Phone:",
-      useBtn: "Redeem Coupon (Show to Staff)",
-      confirmUseBtn: "Mark as used? Tap again to confirm",
-      alreadyUsedBtn: "Already Used",
-      staffNote: "* Please show this screen to staff at checkout",
-      categories: {},
-      areas: {}
-    },
-    zh: {
-      pageTitle: "精選優惠券一覽",
-      siteTitle: "🎁 精選優惠券一覽",
-      siteSubtitle: "可依語言、類別與地區篩選。點擊優惠券並輸入密碼即可查看詳情。\n密碼已記載於購買 JAPAN QUALITY SIM 後的電子郵件內文中。",
-      lockedStatus: "🔒 尚未解鎖",
-      unlockedStatus: "🔓 已解鎖（所有優惠券皆可使用）",
-      labelCategory: "類別",
-      labelArea: "地區",
-      allCategories: "全部類別",
-      allAreas: "全部地區",
-      gpsBtn: "📍 依距離由近到遠排序",
-      gpsResetBtn: "恢復預設排序",
-      gpsIdle: "※ 允許定位權限後可依距離排序顯示",
-      gpsLoading: "正在取得目前位置...",
-      gpsSorted: "📍 已依距離由近到遠排序",
-      gpsError: "無法取得位置資訊，請確認定位權限與網路連線。",
-      gpsUnsupported: "此瀏覽器不支援定位功能。",
-      available: "可使用",
-      used: "已使用",
-      empty: "目前沒有符合條件的優惠券。",
-      pwTitle: "輸入密碼",
-      pwDesc: "輸入一次後，其他優惠券也會一併解鎖",
-      pwPlaceholder: "請輸入密碼",
-      pwSubmitBtn: "解除鎖定",
-      pwError: "密碼不正確",
-      couponCodeLabel: "優惠券編號",
-      storeNameLabel: "店家名稱：",
-      addressLabel: "地址（地圖）：",
-      phoneLabel: "電話：",
-      useBtn: "使用優惠券（出示給店員）",
-      confirmUseBtn: "確定要標記為已使用嗎？請再點一次確認",
-      alreadyUsedBtn: "此優惠券已使用",
-      staffNote: "※ 結帳時請向店員出示此畫面",
-      categories: {},
-      areas: {}
-    },
-    ko: {
-      pageTitle: "한정 쿠폰 모음",
-      siteTitle: "🎁 한정 쿠폰 모음",
-      siteSubtitle: "언어, 카테고리, 지역별로 필터링할 수 있습니다. 쿠폰을 탭하고 비밀번호를 입력하세요.\n비밀번호는 JAPAN QUALITY SIM 구매 후 발송되는 이메일 본문에 기재되어 있습니다.",
-      lockedStatus: "🔒 잠금 상태",
-      unlockedStatus: "🔓 잠금 해제됨 (모든 쿠폰 이용 가능)",
-      labelCategory: "카테고리",
-      labelArea: "지역",
-      allCategories: "전체 카테고리",
-      allAreas: "전체 지역",
-      gpsBtn: "📍 가까운 순으로 정렬",
-      gpsResetBtn: "기본 정렬로 복귀",
-      gpsIdle: "※ 위치 권한을 허용하면 가까운 쿠폰 순으로 볼 수 있습니다",
-      gpsLoading: "현재 위치를 확인 중...",
-      gpsSorted: "📍 현재 위치에서 가까운 순으로 정렬했습니다",
-      gpsError: "위치 정보를 가져올 수 없습니다. 권한 설정을 확인해 주세요.",
-      gpsUnsupported: "이 브라우저에서는 위치 기능을 지원하지 않습니다.",
-      available: "사용 가능",
-      used: "사용 완료",
-      empty: "선택한 조건에 맞는 쿠폰이 없습니다.",
-      pwTitle: "비밀번호 입력",
-      pwDesc: "한 번 입력하면 다른 쿠폰도 함께 해제됩니다",
-      pwPlaceholder: "비밀번호 입력",
-      pwSubmitBtn: "잠금 해제",
-      pwError: "비밀번호가 올바르지 않습니다",
-      couponCodeLabel: "쿠폰 번호",
-      storeNameLabel: "매장명:",
-      addressLabel: "주소(지도):",
-      phoneLabel: "전화번호:",
-      useBtn: "쿠폰 사용하기 (직원 제시)",
-      confirmUseBtn: "사용 완료로 처리할까요? 한 번 더 탭하면 확정됩니다",
-      alreadyUsedBtn: "이미 사용한 쿠폰입니다",
-      staffNote: "* 결제 시 직원에게 이 화면을 보여주세요",
-      categories: {},
-      areas: {}
-    }
-  };
-
-  // ★カテゴリ・エリアを増やす場合は I18N.ja と両方に同じキーを追加してください★
-  const CATEGORY_KEYS = Object.keys(I18N.ja.categories);
-  const AREA_KEYS = Object.keys(I18N.ja.areas);
-
-  // ★couponCode / storeName / address / phone は不要な場合、省略または "" で非表示になります★
-  const coupons = [
-    {
-      id: "coupon_1",
-      category: "food",
-      area: "shibuya",
-      couponCode: "JQS-SHB-20OFF",
-      lat: 35.6580,
-      lng: 139.7016,
-      image: "./images/bop.jpg",
-      i18n: {
-        ja: {
-          title: "【初回限定】お会計から20%OFF",
-          shortDesc: "全メニュー対象！お得な割引クーポン",
-          detailDesc: "お会計時にこの画面をご提示いただくと、合計金額から20%割引いたします。",
-          storeName: "渋谷ダイニング バル",
-          address: "東京都渋谷区道玄坂1-2-3",
-          phone: "03-1234-5678",
-          terms: "・有効期限：2026年12月末まで\n・他の割引との併用不可\n・お一人様1回限り有効"
-        }
-      }
-    },
-    {
-      id: "coupon_2",
-      category: "food",
-      area: "shinjuku",
-      couponCode: "JQS-DRINK-01",
-      lat: 35.6896,
-      lng: 139.7006,
-      image: "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=600&q=80",
-      i18n: {
-        ja: {
-          title: "ドリンク1杯無料サービス",
-          shortDesc: "お好きなソフトドリンクを1杯プレゼント",
-          detailDesc: "お食事をご注文の方に、お好きなソフトドリンクを1杯無料でサービスいたします。",
-          terms: "・有効期限：2026年12月末まで\n・アルコール類は対象外\n・1グループ1枚まで"
-        }
-      }
-    },
-    {
-      id: "coupon_3",
-      category: "experience",
-      area: "shibuya",
-      couponCode: "JQS-CRAFT-500",
-      lat: 35.6595,
-      lng: 139.7004,
-      image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=600&q=80",
-      i18n: {
-        ja: {
-          title: "ワークショップ体験 500円OFF",
-          shortDesc: "人気のものづくり体験がお得に楽しめる",
-          detailDesc: "対象の体験プログラム受付時にご提示で、参加費から500円割引いたします。",
-          storeName: "シブヤ クラフトスタジオ",
-          address: "東京都渋谷区渋谷2-10-5",
-          phone: "03-9876-5432",
-          terms: "・有効期限：2026年12月末まで\n・事前予約が必要な体験あり\n・お一人様1回限り有効"
-        }
-      }
-    },
-    {
-      id: "coupon_4",
-      category: "ticket",
-      area: "umeda",
-      lat: 34.7025,
-      lng: 135.4959,
-      image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=600&q=80",
-      i18n: {
-        ja: {
-          title: "施設入場料 100円引きクーポン",
-          shortDesc: "当日窓口での入場チケットが割引",
-          detailDesc: "チケット売り場で本画面をご提示いただくと、入場料を100円割引いたします。",
-          storeName: "梅田スカイ展望ギャラリー",
-          address: "大阪府大阪市北区大淀中1-1-88",
-          phone: "06-6440-3855",
-          terms: "・有効期限：2026年12月末まで\n・他の優待券との併用不可\n・当日券のみ対象"
-        }
-      }
-    }
-  ];
-
-  function detectInitialLanguage() {
-    try {
-      const savedLang = sessionStorage.getItem("selected_coupon_lang");
-      if (savedLang && I18N[savedLang]) return savedLang;
-    } catch (e) {}
-
-    const candidates = [];
-    if (Array.isArray(navigator.languages)) candidates.push(...navigator.languages);
-    if (navigator.language) candidates.push(navigator.language);
-
-    for (const raw of candidates) {
-      const code = String(raw).toLowerCase();
-      if (code.startsWith("en")) return "en";
-      if (code.startsWith("zh")) return "zh";
-      if (code.startsWith("ko")) return "ko";
-      if (code.startsWith("ja")) return "ja";
-    }
-    return "ja";
-  }
-
-  let currentLang = detectInitialLanguage();
-  let selectedCategory = "all";
-  let selectedArea = "all";
-  let gpsSorted = false;
-  let gpsState = "idle";
-  let distanceMap = {};
-  let currentCoupon = null;
-  let pendingUseConfirm = false;
-
-  const autoTranslateCache = {};
-  const inflightTranslations = new Set();
-
-  function escapeHtml(str) {
-    return String(str || "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#39;");
-  }
-
-  function getApiLangCode(lang) {
-    if (lang === "en") return "en";
-    if (lang === "zh") return "zh-TW";
-    if (lang === "ko") return "ko";
-    return "ja";
-  }
-
-  function getCacheKey(scope, itemId, field, lang, sourceText) {
-    return `auto_tr_${scope}_${itemId}_${lang}_${field}_${sourceText}`;
-  }
-
-  function getCachedTranslation(scope, itemId, field, lang, sourceText) {
-    const key = getCacheKey(scope, itemId, field, lang, sourceText);
-    if (autoTranslateCache[key]) return autoTranslateCache[key];
-    try {
-      const val = sessionStorage.getItem(key);
-      if (val) {
-        autoTranslateCache[key] = val;
-        return val;
-      }
-    } catch (e) {}
-    return null;
-  }
-
-  function setCachedTranslation(scope, itemId, field, lang, sourceText, translatedText) {
-    const key = getCacheKey(scope, itemId, field, lang, sourceText);
-    autoTranslateCache[key] = translatedText;
-    try {
-      sessionStorage.setItem(key, translatedText);
-    } catch (e) {}
-  }
-
-  async function translateText(text, targetLang) {
-    if (!text || targetLang === "ja") return text;
-    const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=ja|${encodeURIComponent(getApiLangCode(targetLang))}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error("Translation API failed");
-    const data = await res.json();
-    const translated = data && data.responseData && data.responseData.translatedText;
-    if (!translated || typeof translated !== "string") throw new Error("Invalid response");
-    return translated;
-  }
-
-  function queueTranslation(scope, itemId, field, sourceText, onDone) {
-    if (currentLang === "ja" || !sourceText) return;
-    if (getCachedTranslation(scope, itemId, field, currentLang, sourceText)) return;
-
-    const taskKey = `${scope}_${itemId}_${field}_${currentLang}`;
-    if (inflightTranslations.has(taskKey)) return;
-
-    inflightTranslations.add(taskKey);
-    translateText(sourceText, currentLang)
-      .then(translated => {
-        setCachedTranslation(scope, itemId, field, currentLang, sourceText, translated);
-        if (typeof onDone === "function") onDone();
-      })
-      .catch(() => {})
-      .finally(() => {
-        inflightTranslations.delete(taskKey);
-      });
-  }
-
-  function getMetaLabel(type, key) {
-    const jaMap = (I18N.ja && I18N.ja[type]) || {};
-    const jaText = jaMap[key] || key;
-    if (currentLang === "ja") return jaText;
-
-    const langMap = (I18N[currentLang] && I18N[currentLang][type]) || {};
-    if (langMap[key]) return langMap[key];
-
-    const cached = getCachedTranslation(type, key, "label", currentLang, jaText);
-    if (cached) return cached;
-
-    queueTranslation(type, key, "label", jaText, () => {
-      renderFilterChips();
-      renderCoupons();
-      if (document.getElementById("detailModal").style.display === "flex" && currentCoupon) {
-        openDetailModal();
-      }
-    });
-
-    return jaText;
-  }
-
-  function ensureTranslationsForCurrentLang() {
-    if (currentLang === "ja") return;
-
-    CATEGORY_KEYS.forEach(k => getMetaLabel("categories", k));
-    AREA_KEYS.forEach(k => getMetaLabel("areas", k));
-
-    const fields = ["title", "shortDesc", "detailDesc", "storeName", "address", "terms"];
-    coupons.forEach(coupon => {
-      const jaData = (coupon.i18n && coupon.i18n.ja) || {};
-      const manualData = (coupon.i18n && coupon.i18n[currentLang]) || {};
-
-      fields.forEach(field => {
-        if (manualData[field]) return;
-        const sourceText = jaData[field] || "";
-        if (!sourceText) return;
-
-        queueTranslation("coupon", coupon.id, field, sourceText, () => {
-          renderCoupons();
-          if (document.getElementById("detailModal").style.display === "flex" && currentCoupon && currentCoupon.id === coupon.id) {
-            openDetailModal();
-          }
-        });
-      });
-    });
-  }
-
-  function t() {
-    return I18N[currentLang] || I18N.ja;
-  }
-
-  function getCouponCode(coupon) {
-    if (!coupon) return "";
-    const jaData = (coupon.i18n && coupon.i18n.ja) || {};
-    return String(coupon.couponCode || jaData.couponCode || "").trim();
-  }
-
-  function getCouponText(coupon) {
-    const i18nObj = coupon.i18n || {};
-    const jaData = i18nObj.ja || {};
-    const manualData = i18nObj[currentLang] || {};
-    const phone = manualData.phone || jaData.phone || "";
-
-    if (currentLang === "ja") {
-      return {
-        title: jaData.title || "",
-        shortDesc: jaData.shortDesc || "",
-        detailDesc: jaData.detailDesc || "",
-        storeName: jaData.storeName || "",
-        address: jaData.address || "",
-        phone,
-        terms: jaData.terms || ""
-      };
-    }
-
-    const resolveField = field => {
-      if (manualData[field]) return manualData[field];
-      const src = jaData[field] || "";
-      if (!src) return "";
-      const cached = getCachedTranslation("coupon", coupon.id, field, currentLang, src);
-      return cached || src;
     };
 
-    return {
-      title: resolveField("title"),
-      shortDesc: resolveField("shortDesc"),
-      detailDesc: resolveField("detailDesc"),
-      storeName: resolveField("storeName"),
-      address: resolveField("address"),
-      phone,
-      terms: resolveField("terms")
+    // 日本語ソースからカテゴリキー・エリアキーを動的生成
+    const CATEGORY_KEYS = Object.keys(I18N.ja.categories);
+    const AREA_KEYS = Object.keys(I18N.ja.areas);
+
+    for (const lang of ["en", "zh-TW", "ko"]) {
+      for (const key of CATEGORY_KEYS) {
+        if (!I18N[lang].categories[key]) {
+          I18N[lang].categories[key] = I18N.ja.categories[key];
+        }
+      }
+      for (const key of AREA_KEYS) {
+        if (!I18N[lang].areas[key]) {
+          I18N[lang].areas[key] = I18N.ja.areas[key];
+        }
+      }
+    }
+
+    // =========================================================================
+    // 2. クーポンデータ（日本語ソース）
+    // =========================================================================
+    const COUPONS = [
+      {
+        id: "cpn-01",
+        categoryKey: "gourmet",
+        areaKey: "shibuya",
+        title: "【初回限定】お会計から20%OFF",
+        summary: "全メニュー対象！お得な割引クーポン",
+        description: "ご来店時に本画面をご提示ください。お会計総額から20%割引いたします。他の割引サービスとの併用はできません。",
+        couponCode: "SHIBUYA20",
+        storeName: "BOP CAFE SHIBUYA",
+        address: "東京都渋谷区道玄坂1-2-3",
+        phone: "03-1234-5678",
+        lat: 35.6580,
+        lng: 139.7016,
+        image: "./images/bop-wide.jpg",
+        bookingNote: "",
+        bookingUrl: ""
+      },
+      {
+        id: "cpn-02",
+        categoryKey: "gourmet",
+        areaKey: "shinjuku",
+        title: "ドリンク1杯無料サービス",
+        summary: "お好きなソフトドリンクを1杯プレゼント",
+        description: "お食事をご注文のお客様対象で、対象のソフトドリンクを1杯無料でご提供いたします。",
+        couponCode: "SHINJUKU-DRINK",
+        storeName: "新宿ガーデンダイニング",
+        address: "東京都新宿区新宿3-10-1",
+        phone: "03-2345-6789",
+        lat: 35.6896,
+        lng: 139.7006,
+        image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=1200&q=80",
+        bookingNote: "",
+        bookingUrl: ""
+      },
+      {
+        id: "cpn-03",
+        categoryKey: "experience",
+        areaKey: "shibuya",
+        title: "ワークショップ体験 500円OFF",
+        summary: "人気のものづくり体験がお得に楽しめる",
+        description: "事前予約制のワークショップ体験が500円OFFになるクーポンです。予約フォームのクーポンコード欄にコードを入力し、当日は本画面をご提示ください。",
+        couponCode: "ART500",
+        storeName: "渋谷アートスタジオ",
+        address: "東京都渋谷区神宮前5-8-2",
+        phone: "03-3456-7890",
+        lat: 35.6641,
+        lng: 139.7055,
+        image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1200&q=80",
+        bookingNote: "事前予約が必須です。以下の「予約サイトを開く」から日時をご予約のうえ、予約画面でクーポンコード「ART500」を入力してください。",
+        bookingUrl: "https://example.com/booking/shibuya-workshop"
+      },
+      {
+        id: "cpn-04",
+        categoryKey: "admission",
+        areaKey: "umeda",
+        title: "施設入場料 100円引きクーポン",
+        summary: "当日窓口での入場チケットが割引",
+        description: "受付窓口にてクーポンコードまたは利用画面をご提示ください。大人・子どもチケットともに適用可能です。",
+        couponCode: "UMEDA100",
+        storeName: "梅田ミュージアム",
+        address: "大阪府大阪市北区梅田2-5-25",
+        phone: "06-1234-5678",
+        lat: 34.7024,
+        lng: 135.4959,
+        image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=1200&q=80",
+        bookingNote: "",
+        bookingUrl: ""
+      }
+    ];
+
+    // =========================================================================
+    // 3. アプリケーション状態
+    // =========================================================================
+    const state = {
+      lang: "ja",
+      selectedCategory: "all",
+      selectedArea: "all",
+      sortByDistance: false,
+      userLocation: null,
+      activeCouponId: null,
+      pendingCouponIdAfterAuth: null,
+      // { [lang]: { coupons: { [id]: { title, summary, description, bookingNote, storeName, address } } } }
+      translatedCache: {}
     };
-  }
 
-  function buildGoogleMapUrl(coupon, addressText) {
-    if (coupon && coupon.mapUrl) return coupon.mapUrl;
-    const query = addressText || (coupon && typeof coupon.lat === "number" && typeof coupon.lng === "number" ? `${coupon.lat},${coupon.lng}` : "");
-    return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
-  }
+    function isUnlocked() {
+      return sessionStorage.getItem(AUTH_STORAGE_KEY) === "true";
+    }
 
-  function setLanguage(lang, saveChoice = false) {
-    if (!I18N[lang]) return;
-    currentLang = lang;
-    if (saveChoice) {
+    function setUnlocked() {
+      sessionStorage.setItem(AUTH_STORAGE_KEY, "true");
+      updateAuthUI();
+    }
+
+    function getUsageMap() {
       try {
-        sessionStorage.setItem("selected_coupon_lang", lang);
-      } catch (e) {}
+        return JSON.parse(localStorage.getItem(USAGE_STORAGE_KEY) || "{}");
+      } catch {
+        return {};
+      }
     }
 
-    document.documentElement.lang = lang === "zh" ? "zh-Hant" : lang;
-    document.title = t().pageTitle;
-
-    document.querySelectorAll(".lang-btn").forEach(btn => {
-      btn.classList.toggle("active", btn.dataset.lang === lang);
-    });
-
-    applyStaticTexts();
-    renderFilterChips();
-    renderCoupons();
-    ensureTranslationsForCurrentLang();
-
-    if (document.getElementById("detailModal").style.display === "flex" && currentCoupon) {
-      openDetailModal();
+    function setUsageStep(couponId, step) {
+      const map = getUsageMap();
+      if (step === 0) {
+        delete map[couponId];
+      } else {
+        map[couponId] = step;
+      }
+      localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(map));
     }
-  }
 
-  function applyStaticTexts() {
-    const dict = t();
-    document.getElementById("siteTitle").textContent = dict.siteTitle;
-    document.getElementById("siteSubtitle").textContent = dict.siteSubtitle;
-    document.getElementById("labelCategory").textContent = dict.labelCategory;
-    document.getElementById("labelArea").textContent = dict.labelArea;
-    document.getElementById("gpsBtn").textContent = dict.gpsBtn;
-    document.getElementById("gpsResetBtn").textContent = dict.gpsResetBtn;
-    document.getElementById("gpsResetBtn").style.display = gpsSorted ? "inline-block" : "none";
-
-    const gpsStatusEl = document.getElementById("gpsStatus");
-    if (gpsState === "loading") gpsStatusEl.textContent = dict.gpsLoading;
-    else if (gpsState === "sorted") gpsStatusEl.textContent = dict.gpsSorted;
-    else if (gpsState === "error") gpsStatusEl.textContent = dict.gpsError;
-    else if (gpsState === "unsupported") gpsStatusEl.textContent = dict.gpsUnsupported;
-    else gpsStatusEl.textContent = dict.gpsIdle;
-
-    document.getElementById("pwTitle").textContent = dict.pwTitle;
-    document.getElementById("pwDesc").textContent = dict.pwDesc;
-    document.getElementById("pwInput").placeholder = dict.pwPlaceholder;
-    document.getElementById("pwSubmitBtn").textContent = dict.pwSubmitBtn;
-    document.getElementById("pwError").textContent = dict.pwError;
-    document.getElementById("labelCouponCode").textContent = dict.couponCodeLabel;
-    document.getElementById("labelStoreName").textContent = dict.storeNameLabel;
-    document.getElementById("labelStoreAddress").textContent = dict.addressLabel;
-    document.getElementById("labelStorePhone").textContent = dict.phoneLabel;
-    document.getElementById("staffNote").textContent = dict.staffNote;
-
-    updateUnlockBadge();
-  }
-
-  function isUnlocked() {
-    try {
-      return sessionStorage.getItem("shared_coupon_unlocked") === "true";
-    } catch (e) {
-      return false;
+    function getUsageStep(couponId) {
+      const map = getUsageMap();
+      return Number(map[couponId] || 0);
     }
-  }
 
-  function setUnlocked() {
-    try {
-      sessionStorage.setItem("shared_coupon_unlocked", "true");
-    } catch (e) {}
-  }
+    // =========================================================================
+    // 4. 自動翻訳（MyMemory API + sessionStorage キャッシュ）
+    // =========================================================================
+    async function translateText(text, targetLang) {
+      if (!text || targetLang === "ja") return text;
+      const apiLang = MYMEMORY_LANG_MAP[targetLang];
+      if (!apiLang) return text;
 
-  function isCouponUsed(couponId) {
-    try {
-      return localStorage.getItem("coupon_used_" + couponId) === "true";
-    } catch (e) {
-      return false;
+      const cacheKey = `${TRANSLATION_CACHE_PREFIX}${targetLang}_${text}`;
+      const cachedSession = sessionStorage.getItem(cacheKey);
+      if (cachedSession) return cachedSession;
+
+      try {
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=ja|${encodeURIComponent(apiLang)}`;
+        const res = await fetch(url);
+        if (!res.ok) return text;
+        const data = await res.json();
+        const translated = data?.responseData?.translatedText;
+        if (translated && typeof translated === "string") {
+          sessionStorage.setItem(cacheKey, translated);
+          return translated;
+        }
+      } catch (err) {
+        console.warn("Translation fallback:", err);
+      }
+      return text;
     }
-  }
 
-  function markCouponUsed(couponId) {
-    try {
-      localStorage.setItem("coupon_used_" + couponId, "true");
-    } catch (e) {}
-  }
+    async function ensureLanguageTranslated(lang) {
+      const bannerEl = document.getElementById("translationBanner");
+      if (lang === "ja") {
+        bannerEl.textContent = "";
+        return;
+      }
 
-  function updateUnlockBadge() {
-    const badge = document.getElementById("unlockStatus");
-    if (isUnlocked()) {
-      badge.textContent = t().unlockedStatus;
-      badge.className = "status-bar unlocked";
-    } else {
-      badge.textContent = t().lockedStatus;
-      badge.className = "status-bar";
+      if (state.translatedCache[lang]) {
+        bannerEl.textContent = I18N[lang].translationNotice;
+        return;
+      }
+
+      bannerEl.textContent = I18N[lang].translating;
+
+      // カテゴリ・エリア翻訳
+      for (const key of CATEGORY_KEYS) {
+        if (I18N[lang].categories[key] === I18N.ja.categories[key]) {
+          I18N[lang].categories[key] = await translateText(I18N.ja.categories[key], lang);
+        }
+      }
+      for (const key of AREA_KEYS) {
+        if (I18N[lang].areas[key] === I18N.ja.areas[key]) {
+          I18N[lang].areas[key] = await translateText(I18N.ja.areas[key], lang);
+        }
+      }
+
+      // クーポン文面翻訳
+      const couponTranslations = {};
+      for (const cp of COUPONS) {
+        couponTranslations[cp.id] = {
+          title: await translateText(cp.title, lang),
+          summary: await translateText(cp.summary, lang),
+          description: await translateText(cp.description, lang),
+          bookingNote: cp.bookingNote ? await translateText(cp.bookingNote, lang) : "",
+          storeName: await translateText(cp.storeName, lang),
+          address: await translateText(cp.address, lang)
+        };
+      }
+
+      state.translatedCache[lang] = couponTranslations;
+      bannerEl.textContent = I18N[lang].translationNotice;
     }
-  }
 
-  function renderFilterChips() {
-    const dict = t();
-    const catBar = document.getElementById("categoryBar");
-    catBar.innerHTML = "";
+    function getLocalizedCoupon(coupon) {
+      if (state.lang === "ja") return coupon;
+      const tr = state.translatedCache[state.lang]?.[coupon.id];
+      if (!tr) return coupon;
+      return {
+        ...coupon,
+        title: tr.title || coupon.title,
+        summary: tr.summary || coupon.summary,
+        description: tr.description || coupon.description,
+        bookingNote: coupon.bookingNote ? (tr.bookingNote || coupon.bookingNote) : "",
+        storeName: tr.storeName || coupon.storeName,
+        address: tr.address || coupon.address
+      };
+    }
 
-    const catOptions = [{ key: "all", label: dict.allCategories }].concat(
-      CATEGORY_KEYS.map(k => ({ key: k, label: getMetaLabel("categories", k) }))
-    );
-    catOptions.forEach(opt => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "chip-btn" + (selectedCategory === opt.key ? " active" : "");
-      btn.textContent = opt.label;
-      btn.onclick = () => {
-        selectedCategory = opt.key;
+    // =========================================================================
+    // 5. 距離計算（Haversine）
+    // =========================================================================
+    function calcDistanceKm(lat1, lon1, lat2, lon2) {
+      if (typeof lat1 !== "number" || typeof lon1 !== "number" || typeof lat2 !== "number" || typeof lon2 !== "number") {
+        return Infinity;
+      }
+      const R = 6371;
+      const dLat = ((lat2 - lat1) * Math.PI) / 180;
+      const dLon = ((lon2 - lon1) * Math.PI) / 180;
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos((lat1 * Math.PI) / 180) *
+          Math.cos((lat2 * Math.PI) / 180) *
+          Math.sin(dLon / 2) *
+          Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    // =========================================================================
+    // 6. 画面描画
+    // =========================================================================
+    function t() {
+      return I18N[state.lang] || I18N.ja;
+    }
+
+    function updateAuthUI() {
+      const dict = t();
+      const badge = document.getElementById("authBadge");
+      const openBtn = document.getElementById("openPasswordBtn");
+      if (isUnlocked()) {
+        badge.className = "auth-badge unlocked";
+        badge.textContent = dict.unlockedBadge;
+        openBtn.style.display = "none";
+      } else {
+        badge.className = "auth-badge locked";
+        badge.textContent = dict.lockedBadge;
+        openBtn.style.display = "inline-flex";
+      }
+    }
+
+    function renderStaticTexts() {
+      const dict = t();
+      document.getElementById("heroTitle").textContent = dict.title;
+      document.getElementById("heroSubtitle").textContent = dict.subtitle;
+      document.getElementById("categoryLabel").textContent = dict.categoryLabel;
+      document.getElementById("areaLabel").textContent = dict.areaLabel;
+      document.getElementById("sortHint").textContent = dict.sortHint;
+      document.getElementById("openPasswordBtn").textContent = dict.openPasswordBtn;
+
+      document.getElementById("pwModalTitle").textContent = dict.pwModalTitle;
+      document.getElementById("pwModalDesc").textContent = dict.pwModalDesc;
+      document.getElementById("passwordInput").placeholder = dict.pwPlaceholder;
+      document.getElementById("pwSubmitBtn").textContent = dict.pwSubmit;
+
+      const sortBtn = document.getElementById("sortByDistanceBtn");
+      sortBtn.classList.toggle("active", state.sortByDistance);
+      sortBtn.querySelector("span").textContent = state.sortByDistance ? dict.sortActive : dict.sortByDistance;
+
+      updateAuthUI();
+    }
+
+    function renderFilterChips() {
+      const dict = t();
+      const catContainer = document.getElementById("categoryChips");
+      const areaContainer = document.getElementById("areaChips");
+
+      catContainer.innerHTML = "";
+      const allCatChip = document.createElement("button");
+      allCatChip.type = "button";
+      allCatChip.className = `chip ${state.selectedCategory === "all" ? "active" : ""}`;
+      allCatChip.textContent = dict.allCategories;
+      allCatChip.addEventListener("click", () => {
+        state.selectedCategory = "all";
         renderFilterChips();
         renderCoupons();
-      };
-      catBar.appendChild(btn);
-    });
+      });
+      catContainer.appendChild(allCatChip);
 
-    const areaBar = document.getElementById("areaBar");
-    areaBar.innerHTML = "";
+      for (const key of CATEGORY_KEYS) {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = `chip ${state.selectedCategory === key ? "active" : ""}`;
+        chip.textContent = dict.categories[key];
+        chip.addEventListener("click", () => {
+          state.selectedCategory = key;
+          renderFilterChips();
+          renderCoupons();
+        });
+        catContainer.appendChild(chip);
+      }
 
-    const areaOptions = [{ key: "all", label: dict.allAreas }].concat(
-      AREA_KEYS.map(k => ({ key: k, label: getMetaLabel("areas", k) }))
-    );
-    areaOptions.forEach(opt => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "chip-btn" + (selectedArea === opt.key ? " active" : "");
-      btn.textContent = opt.label;
-      btn.onclick = () => {
-        selectedArea = opt.key;
+      areaContainer.innerHTML = "";
+      const allAreaChip = document.createElement("button");
+      allAreaChip.type = "button";
+      allAreaChip.className = `chip ${state.selectedArea === "all" ? "active" : ""}`;
+      allAreaChip.textContent = dict.allAreas;
+      allAreaChip.addEventListener("click", () => {
+        state.selectedArea = "all";
         renderFilterChips();
         renderCoupons();
-      };
-      areaBar.appendChild(btn);
-    });
-  }
+      });
+      areaContainer.appendChild(allAreaChip);
 
-  function calcDistanceKm(lat1, lng1, lat2, lng2) {
-    const R = 6371;
-    const toRad = deg => deg * Math.PI / 180;
-    const dLat = toRad(lat2 - lat1);
-    const dLng = toRad(lng2 - lng1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  }
-
-  function sortByGPS() {
-    if (!navigator.geolocation) {
-      gpsState = "unsupported";
-      applyStaticTexts();
-      return;
+      for (const key of AREA_KEYS) {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = `chip ${state.selectedArea === key ? "active" : ""}`;
+        chip.textContent = dict.areas[key];
+        chip.addEventListener("click", () => {
+          state.selectedArea = key;
+          renderFilterChips();
+          renderCoupons();
+        });
+        areaContainer.appendChild(chip);
+      }
     }
 
-    gpsState = "loading";
-    applyStaticTexts();
+    function getStatusInfo(couponId) {
+      const dict = t();
+      const step = getUsageStep(couponId);
+      if (step >= 2) {
+        return { label: dict.statusUsed, cls: "tag-status-used" };
+      }
+      if (step === 1) {
+        return { label: dict.statusProgress, cls: "tag-status-progress" };
+      }
+      return { label: dict.statusAvailable, cls: "tag-status-available" };
+    }
 
-    navigator.geolocation.getCurrentPosition(
-      pos => {
-        const { latitude, longitude } = pos.coords;
-        distanceMap = {};
-        coupons.forEach(c => {
-          if (typeof c.lat === "number" && typeof c.lng === "number") {
-            distanceMap[c.id] = calcDistanceKm(latitude, longitude, c.lat, c.lng);
+    function renderCoupons() {
+      const dict = t();
+      const grid = document.getElementById("couponGrid");
+
+      let list = COUPONS.filter((cp) => {
+        const matchCat = state.selectedCategory === "all" || cp.categoryKey === state.selectedCategory;
+        const matchArea = state.selectedArea === "all" || cp.areaKey === state.selectedArea;
+        return matchCat && matchArea;
+      }).map((cp) => {
+        const distKm =
+          state.userLocation
+            ? calcDistanceKm(state.userLocation.lat, state.userLocation.lng, cp.lat, cp.lng)
+            : null;
+        return { raw: cp, localized: getLocalizedCoupon(cp), distKm };
+      });
+
+      if (state.sortByDistance && state.userLocation) {
+        list.sort((a, b) => a.distKm - b.distKm);
+      }
+
+      grid.innerHTML = "";
+      if (list.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "empty-state";
+        empty.textContent = dict.noCoupons;
+        grid.appendChild(empty);
+        return;
+      }
+
+      for (const item of list) {
+        const cp = item.localized;
+        const status = getStatusInfo(cp.id);
+        const card = document.createElement("article");
+        card.className = "coupon-card";
+        card.tabIndex = 0;
+        card.setAttribute("role", "button");
+        card.setAttribute("aria-label", cp.title);
+
+        const distTag =
+          typeof item.distKm === "number" && Number.isFinite(item.distKm)
+            ? `<span class="tag tag-distance">${item.distKm < 1 ? `${Math.round(item.distKm * 1000)}m` : `${item.distKm.toFixed(1)}km`}</span>`
+            : "";
+
+        card.innerHTML = `
+          <div class="coupon-thumb-wrap">
+            <img class="coupon-thumb" src="${escapeAttr(cp.image)}" alt="${escapeAttr(cp.title)}" loading="lazy" />
+          </div>
+          <div class="coupon-body">
+            <div class="meta-tags">
+              <span class="tag ${status.cls}">${escapeHtml(status.label)}</span>
+              <span class="tag tag-meta">${escapeHtml(dict.categories[cp.categoryKey] || cp.categoryKey)}</span>
+              <span class="tag tag-meta">${escapeHtml(dict.areas[cp.areaKey] || cp.areaKey)}</span>
+              ${distTag}
+            </div>
+            <h2 class="coupon-title">${escapeHtml(cp.title)}</h2>
+            <p class="coupon-summary">${escapeHtml(cp.summary)}</p>
+            <div class="coupon-store">${escapeHtml(cp.storeName)}</div>
+          </div>
+        `;
+
+        const handleOpen = () => handleCouponClick(cp.id);
+        card.addEventListener("click", handleOpen);
+        card.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleOpen();
           }
         });
-        gpsSorted = true;
-        gpsState = "sorted";
-        applyStaticTexts();
-        renderCoupons();
-      },
-      () => {
-        gpsState = "error";
-        applyStaticTexts();
-      },
-      { enableHighAccuracy: false, timeout: 8000 }
-    );
-  }
 
-  function resetGPS() {
-    gpsSorted = false;
-    gpsState = "idle";
-    distanceMap = {};
-    applyStaticTexts();
-    renderCoupons();
-  }
-
-  function formatDistance(km) {
-    if (typeof km !== "number") return "";
-    if (km < 1) return `${Math.round(km * 1000)}m`;
-    return `${km.toFixed(1)}km`;
-  }
-
-  function renderCoupons() {
-    const dict = t();
-    const list = document.getElementById("couponList");
-    list.innerHTML = "";
-
-    let filtered = coupons.filter(c => {
-      const matchCat = selectedCategory === "all" || c.category === selectedCategory;
-      const matchArea = selectedArea === "all" || c.area === selectedArea;
-      return matchCat && matchArea;
-    });
-
-    if (gpsSorted) {
-      filtered = [...filtered].sort((a, b) => {
-        const da = typeof distanceMap[a.id] === "number" ? distanceMap[a.id] : Infinity;
-        const db = typeof distanceMap[b.id] === "number" ? distanceMap[b.id] : Infinity;
-        return da - db;
-      });
+        grid.appendChild(card);
+      }
     }
 
-    if (filtered.length === 0) {
-      list.innerHTML = `<div class="empty-msg">${escapeHtml(dict.empty)}</div>`;
-      return;
+    function handleCouponClick(couponId) {
+      if (isUnlocked()) {
+        openDetailModal(couponId);
+      } else {
+        state.pendingCouponIdAfterAuth = couponId;
+        openPasswordModal();
+      }
     }
 
-    filtered.forEach(c => {
-      const text = getCouponText(c);
-      const used = isCouponUsed(c.id);
-      const distText = gpsSorted ? formatDistance(distanceMap[c.id]) : "";
-      const catLabel = getMetaLabel("categories", c.category);
-      const areaLabel = getMetaLabel("areas", c.area);
+    function openPasswordModal() {
+      document.getElementById("passwordError").textContent = "";
+      document.getElementById("passwordInput").value = "";
+      document.getElementById("passwordModal").classList.add("open");
+      document.getElementById("passwordInput").focus();
+    }
 
-      const card = document.createElement("div");
-      card.className = "coupon-card";
-      card.onclick = () => handleCouponClick(c);
+    function closePasswordModal() {
+      document.getElementById("passwordModal").classList.remove("open");
+    }
 
-      card.innerHTML = `
-        <img src="${escapeHtml(c.image)}" alt="${escapeHtml(text.title)}">
-        <div class="coupon-info">
-          <div class="meta-row">
-            <span class="badge ${used ? "badge-used" : "badge-available"}">${escapeHtml(used ? dict.used : dict.available)}</span>
-            <span class="badge badge-cat">${escapeHtml(catLabel)}</span>
-            <span class="badge badge-area">${escapeHtml(areaLabel)}</span>
-            ${distText ? `<span class="badge badge-dist">${escapeHtml(distText)}</span>` : ""}
+    function openDetailModal(couponId) {
+      const raw = COUPONS.find((c) => c.id === couponId);
+      if (!raw) return;
+      state.activeCouponId = couponId;
+      renderDetailModalContent();
+      document.getElementById("detailModal").classList.add("open");
+    }
+
+    function closeDetailModal() {
+      document.getElementById("detailModal").classList.remove("open");
+      state.activeCouponId = null;
+    }
+
+    function renderDetailModalContent() {
+      const raw = COUPONS.find((c) => c.id === state.activeCouponId);
+      if (!raw) return;
+      const cp = getLocalizedCoupon(raw);
+      const dict = t();
+      const status = getStatusInfo(cp.id);
+      const currentStep = getUsageStep(cp.id);
+
+      const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${cp.storeName} ${raw.address}`)}`;
+      const telHref = cp.phone ? `tel:${cp.phone.replace(/[^+\d]/g, "")}` : "";
+
+      const codeHtml = cp.couponCode
+        ? `
+          <div class="code-box">
+            <div>
+              <div class="code-label">${escapeHtml(dict.couponCodeLabel)}</div>
+              <div class="code-value" id="couponCodeText">${escapeHtml(cp.couponCode)}</div>
+            </div>
+            <button class="btn-copy" type="button" id="copyCodeBtn">${escapeHtml(dict.copyCode)}</button>
           </div>
-          <h2 class="coupon-title">${escapeHtml(text.title)}</h2>
-          <p class="coupon-desc">${escapeHtml(text.shortDesc)}</p>
+        `
+        : "";
+
+      const bookingHtml =
+        cp.bookingNote || cp.bookingUrl
+          ? `
+            <div class="booking-box">
+              <div class="booking-heading">${escapeHtml(dict.bookingTitle)}</div>
+              ${cp.bookingNote ? `<p class="booking-note">${escapeHtml(cp.bookingNote)}</p>` : ""}
+              ${
+                cp.bookingUrl
+                  ? `<a class="booking-link" href="${escapeAttr(cp.bookingUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(dict.openBookingSite)} ↗</a>`
+                  : ""
+              }
+            </div>
+          `
+          : "";
+
+      const container = document.getElementById("detailContent");
+      container.innerHTML = `
+        <div class="modal-image-wrap">
+          <img class="modal-image" src="${escapeAttr(cp.image)}" alt="${escapeAttr(cp.title)}" />
+        </div>
+        <div class="meta-tags">
+          <span class="tag ${status.cls}">${escapeHtml(status.label)}</span>
+          <span class="tag tag-meta">${escapeHtml(dict.categories[cp.categoryKey] || cp.categoryKey)}</span>
+          <span class="tag tag-meta">${escapeHtml(dict.areas[cp.areaKey] || cp.areaKey)}</span>
+        </div>
+        <h2 class="modal-title" id="detailTitle">${escapeHtml(cp.title)}</h2>
+        <p class="modal-desc">${escapeHtml(cp.description)}</p>
+
+        ${codeHtml}
+        ${bookingHtml}
+
+        <table class="info-table">
+          <tbody>
+            <tr>
+              <th>${escapeHtml(dict.storeLabel)}</th>
+              <td>${escapeHtml(cp.storeName)}</td>
+            </tr>
+            <tr>
+              <th>${escapeHtml(dict.addressLabel)}</th>
+              <td>
+                <div>${escapeHtml(cp.address)}</div>
+                <a href="${escapeAttr(mapUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(dict.openMap)} ↗</a>
+              </td>
+            </tr>
+            ${
+              cp.phone
+                ? `
+                  <tr>
+                    <th>${escapeHtml(dict.phoneLabel)}</th>
+                    <td><a href="${escapeAttr(telHref)}">${escapeHtml(cp.phone)}</a></td>
+                  </tr>
+                `
+                : ""
+            }
+          </tbody>
+        </table>
+
+        <div class="usage-box">
+          <div class="usage-title">${escapeHtml(dict.usageTitle)}（${escapeHtml(status.label)}）</div>
+          <div class="usage-actions">
+            <button class="btn-primary" type="button" id="step1Btn" ${currentStep >= 1 ? "disabled" : ""}>
+              ${escapeHtml(dict.step1Btn)}
+            </button>
+            <button class="btn-confirm" type="button" id="step2Btn" ${currentStep >= 2 ? "disabled" : ""}>
+              ${escapeHtml(dict.step2Btn)}
+            </button>
+            <button class="btn-reset" type="button" id="resetStepBtn">
+              ${escapeHtml(dict.resetBtn)}
+            </button>
+          </div>
         </div>
       `;
-      list.appendChild(card);
-    });
-  }
 
-  function handleCouponClick(coupon) {
-    currentCoupon = coupon;
-    pendingUseConfirm = false;
+      const copyBtn = document.getElementById("copyCodeBtn");
+      if (copyBtn) {
+        copyBtn.addEventListener("click", async () => {
+          try {
+            await navigator.clipboard.writeText(cp.couponCode);
+            copyBtn.textContent = dict.copiedCode;
+            setTimeout(() => {
+              copyBtn.textContent = dict.copyCode;
+            }, 1500);
+          } catch {
+            copyBtn.textContent = dict.copiedCode;
+          }
+        });
+      }
 
-    if (isUnlocked()) {
-      openDetailModal();
-    } else {
-      document.getElementById("pwInput").value = "";
-      document.getElementById("pwError").style.display = "none";
-      document.getElementById("pwModal").style.display = "flex";
-      setTimeout(() => document.getElementById("pwInput").focus(), 50);
-    }
-  }
+      document.getElementById("step1Btn").addEventListener("click", () => {
+        setUsageStep(cp.id, 1);
+        renderDetailModalContent();
+        renderCoupons();
+      });
 
-  function checkPassword() {
-    const input = document.getElementById("pwInput").value;
-    if (input === SHARED_PASSWORD) {
-      setUnlocked();
-      closeModal("pwModal");
-      updateUnlockBadge();
-      openDetailModal();
-    } else {
-      document.getElementById("pwError").style.display = "block";
-    }
-  }
+      document.getElementById("step2Btn").addEventListener("click", () => {
+        setUsageStep(cp.id, 2);
+        renderDetailModalContent();
+        renderCoupons();
+      });
 
-  function openDetailModal() {
-    if (!currentCoupon) return;
-    const dict = t();
-    const text = getCouponText(currentCoupon);
-    const couponCode = getCouponCode(currentCoupon);
-
-    pendingUseConfirm = false;
-    document.getElementById("detailImg").src = currentCoupon.image || "";
-    document.getElementById("detailCategory").textContent = getMetaLabel("categories", currentCoupon.category);
-    document.getElementById("detailArea").textContent = getMetaLabel("areas", currentCoupon.area);
-    document.getElementById("detailTitle").textContent = text.title;
-    document.getElementById("detailDesc").textContent = text.detailDesc;
-
-    // クーポン番号の表示制御
-    const codeBox = document.getElementById("detailCodeBox");
-    if (couponCode) {
-      document.getElementById("labelCouponCode").textContent = dict.couponCodeLabel;
-      document.getElementById("detailCouponCode").textContent = couponCode;
-      codeBox.style.display = "block";
-    } else {
-      codeBox.style.display = "none";
+      document.getElementById("resetStepBtn").addEventListener("click", () => {
+        setUsageStep(cp.id, 0);
+        renderDetailModalContent();
+        renderCoupons();
+      });
     }
 
-    // 店舗名・住所・電話番号の表示制御
-    const hasName = Boolean(text.storeName && text.storeName.trim());
-    const hasAddress = Boolean(text.address && text.address.trim());
-    const hasPhone = Boolean(text.phone && text.phone.trim());
-    const hasAnyStoreInfo = hasName || hasAddress || hasPhone;
-
-    document.getElementById("detailStoreBox").style.display = hasAnyStoreInfo ? "block" : "none";
-
-    const nameRow = document.getElementById("storeNameRow");
-    if (hasName) {
-      nameRow.style.display = "flex";
-      document.getElementById("detailStoreName").textContent = text.storeName;
-    } else {
-      nameRow.style.display = "none";
+    // =========================================================================
+    // 7. エスケープ＆イベント登録
+    // =========================================================================
+    function escapeHtml(str) {
+      return String(str ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
     }
 
-    const addrRow = document.getElementById("storeAddressRow");
-    if (hasAddress) {
-      addrRow.style.display = "flex";
-      const addrLink = document.getElementById("detailStoreAddressLink");
-      addrLink.textContent = text.address;
-      addrLink.href = buildGoogleMapUrl(currentCoupon, text.address);
-    } else {
-      addrRow.style.display = "none";
+    function escapeAttr(str) {
+      return escapeHtml(str);
     }
 
-    const phoneRow = document.getElementById("storePhoneRow");
-    if (hasPhone) {
-      phoneRow.style.display = "flex";
-      const phoneLink = document.getElementById("detailStorePhoneLink");
-      phoneLink.textContent = text.phone;
-      phoneLink.href = `tel:${text.phone.replace(/[^+\d]/g, "")}`;
-    } else {
-      phoneRow.style.display = "none";
+    function bindEvents() {
+      document.querySelectorAll(".lang-btn").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const nextLang = btn.dataset.lang;
+          if (!SUPPORTED_LANGS.includes(nextLang)) return;
+          state.lang = nextLang;
+
+          document.querySelectorAll(".lang-btn").forEach((b) => {
+            b.classList.toggle("active", b.dataset.lang === nextLang);
+          });
+
+          renderStaticTexts();
+          renderFilterChips();
+          renderCoupons();
+
+          await ensureLanguageTranslated(nextLang);
+          renderStaticTexts();
+          renderFilterChips();
+          renderCoupons();
+          if (state.activeCouponId) {
+            renderDetailModalContent();
+          }
+        });
+      });
+
+      document.getElementById("openPasswordBtn").addEventListener("click", () => {
+        state.pendingCouponIdAfterAuth = null;
+        openPasswordModal();
+      });
+
+      document.getElementById("closePasswordModal").addEventListener("click", closePasswordModal);
+      document.getElementById("closeDetailModal").addEventListener("click", closeDetailModal);
+
+      document.getElementById("passwordModal").addEventListener("click", (e) => {
+        if (e.target.id === "passwordModal") closePasswordModal();
+      });
+
+      document.getElementById("detailModal").addEventListener("click", (e) => {
+        if (e.target.id === "detailModal") closeDetailModal();
+      });
+
+      document.getElementById("passwordForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const inputVal = document.getElementById("passwordInput").value;
+        if (inputVal === SHARED_PASSWORD) {
+          setUnlocked();
+          closePasswordModal();
+          renderCoupons();
+          if (state.pendingCouponIdAfterAuth) {
+            const targetId = state.pendingCouponIdAfterAuth;
+            state.pendingCouponIdAfterAuth = null;
+            openDetailModal(targetId);
+          }
+        } else {
+          document.getElementById("passwordError").textContent = t().pwError;
+        }
+      });
+
+      document.getElementById("sortByDistanceBtn").addEventListener("click", () => {
+        const dict = t();
+        if (state.sortByDistance) {
+          state.sortByDistance = false;
+          renderStaticTexts();
+          renderCoupons();
+          return;
+        }
+
+        if (!navigator.geolocation) {
+          alert(dict.geoUnsupported);
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (pos) => {
+            state.userLocation = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude
+            };
+            state.sortByDistance = true;
+            renderStaticTexts();
+            renderCoupons();
+          },
+          () => {
+            alert(dict.geoDenied);
+          }
+        );
+      });
     }
 
-    document.getElementById("detailTerms").textContent = text.terms;
-
-    const used = isCouponUsed(currentCoupon.id);
-    const btn = document.getElementById("useBtn");
-
-    if (used) {
-      btn.textContent = dict.alreadyUsedBtn;
-      btn.className = "btn btn-used";
-      btn.disabled = true;
-    } else {
-      btn.textContent = dict.useBtn;
-      btn.className = "btn btn-use";
-      btn.disabled = false;
-    }
-
-    document.getElementById("detailModal").style.display = "flex";
-  }
-
-  function useCoupon() {
-    if (!currentCoupon || isCouponUsed(currentCoupon.id)) return;
-    const dict = t();
-    const btn = document.getElementById("useBtn");
-
-    if (!pendingUseConfirm) {
-      pendingUseConfirm = true;
-      btn.textContent = dict.confirmUseBtn;
-      return;
-    }
-
-    pendingUseConfirm = false;
-    markCouponUsed(currentCoupon.id);
-    btn.textContent = dict.alreadyUsedBtn;
-    btn.className = "btn btn-used";
-    btn.disabled = true;
+    // 初期起動
+    bindEvents();
+    renderStaticTexts();
+    renderFilterChips();
     renderCoupons();
-  }
-
-  function closeModal(id) {
-    document.getElementById(id).style.display = "none";
-  }
-
-  window.setLanguage = setLanguage;
-  window.sortByGPS = sortByGPS;
-  window.resetGPS = resetGPS;
-  window.checkPassword = checkPassword;
-  window.useCoupon = useCoupon;
-  window.closeModal = closeModal;
-
-  setLanguage(currentLang, false);
-})();
-</script>
+  </script>
 </body>
 </html>
