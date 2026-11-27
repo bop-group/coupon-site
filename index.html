@@ -551,9 +551,45 @@
     }
 
     .info-table th {
-      width: 110px;
+      width: 112px;
       color: var(--text-muted);
       font-weight: 700;
+    }
+
+    /* Googleマップ風の曜日別営業時間リスト */
+    .hours-list {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .hours-row {
+      display: grid;
+      grid-template-columns: 36px 1fr;
+      gap: 10px;
+      align-items: baseline;
+      line-height: 1.45;
+    }
+
+    .hours-day {
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .hours-time {
+      color: var(--text-main);
+    }
+
+    .hours-time.closed {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .hours-note {
+      margin-top: 6px;
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: pre-line;
     }
 
     .usage-box {
@@ -710,7 +746,7 @@
 
     const I18N = {
       ja: {
-        title: "🎁 限定クーポン一覧 🎁",
+        title: "限定クーポン一覧",
         subtitle: "言語・カテゴリ・エリアで絞り込めます。クーポンをタップしてパスワードを入力すると詳細が開きます。パスワードはJAPAN QUALITY SIMをご購入後、メール本文に記載しております。",
         categoryLabel: "カテゴリ",
         areaLabel: "エリア",
@@ -741,6 +777,19 @@
         addressLabel: "住所・地図",
         openMap: "Googleマップで見る",
         phoneLabel: "電話番号",
+        hoursLabel: "営業時間",
+        closedText: "定休日",
+        open24hText: "24時間営業",
+        allYearOpenText: "年中無休",
+        days: {
+          mon: "月",
+          tue: "火",
+          wed: "水",
+          thu: "木",
+          fri: "金",
+          sat: "土",
+          sun: "日"
+        },
         usageTitle: "利用方法・利用記録",
         onceNote: "※1回限り有効です。スタッフに画面をご提示のうえ、利用ボタンを押すと「利用済み」になります（一度利用済みにすると元に戻せません）。",
         dailyNote: "※1日1回ご利用いただけます（毎日0:00に自動リセット）。スタッフに画面をご提示のうえ、利用ボタンを押してください。",
@@ -801,6 +850,19 @@
         addressLabel: "Address & Map",
         openMap: "Open in Google Maps",
         phoneLabel: "Phone",
+        hoursLabel: "Hours",
+        closedText: "Closed",
+        open24hText: "Open 24 hours",
+        allYearOpenText: "Open year-round",
+        days: {
+          mon: "Mon",
+          tue: "Tue",
+          wed: "Wed",
+          thu: "Thu",
+          fri: "Fri",
+          sat: "Sat",
+          sun: "Sun"
+        },
         usageTitle: "How to Use & Usage Status",
         onceNote: "*Valid once only. Show this screen to staff and tap the button to mark as Used (cannot be reset once marked Used).",
         dailyNote: "*Valid once per day (automatically resets at 0:00). Show this screen to staff and tap the button.",
@@ -849,6 +911,19 @@
         addressLabel: "地址／地圖",
         openMap: "在 Google 地圖中開啟",
         phoneLabel: "電話",
+        hoursLabel: "營業時間",
+        closedText: "公休",
+        open24hText: "24 小時營業",
+        allYearOpenText: "全年無休",
+        days: {
+          mon: "一",
+          tue: "二",
+          wed: "三",
+          thu: "四",
+          fri: "五",
+          sat: "六",
+          sun: "日"
+        },
         usageTitle: "使用方式與紀錄",
         onceNote: "※限使用一次。向店員出示畫面並按下使用按鈕後將顯示為「已使用」（標記為已使用後無法重設）。",
         dailyNote: "※每日可使用一次（每日 0:00 自動重設）。向店員出示畫面並按下使用按鈕。",
@@ -897,6 +972,19 @@
         addressLabel: "주소·지도",
         openMap: "Google 지도에서 보기",
         phoneLabel: "전화번호",
+        hoursLabel: "영업시간",
+        closedText: "휴무일",
+        open24hText: "24시간 영업",
+        allYearOpenText: "연중무휴",
+        days: {
+          mon: "월",
+          tue: "화",
+          wed: "수",
+          thu: "목",
+          fri: "금",
+          sat: "토",
+          sun: "일"
+        },
         usageTitle: "이용 방법 및 기록",
         onceNote: "*1회만 사용 가능합니다. 직원에게 화면을 보여준 뒤 이용 버튼을 누르면 '사용 완료'가 됩니다(사용 완료 후에는 되돌릴 수 없습니다).",
         dailyNote: "*1일 1회 이용 가능합니다(매일 0:00 자동 초기화). 직원에게 화면을 보여준 뒤 이용 버튼을 눌러 주세요.",
@@ -936,6 +1024,9 @@
     // 2. クーポンデータ（日本語ソース）
     // - areaKeys: ["shinjuku", "shibuya"] のように複数エリア指定可（単数 areaKey も互換対応）
     // - usageLimit: "once"（1回限り・リセット不可）, "daily"（1日1回・毎日0:00自動リセット）, "unlimited"（何回でも利用可）
+    // - openingHours: 曜日別営業時間リスト（例: { dayKey: "mon", time: "11:00〜22:00", isClosed: false, specialKey: "" }）
+    //     specialKey に "closed" / "24h" / "all_year" を指定すると各言語の定型文に自動変換
+    // - hoursNote: 営業時間に関する補足メモ（L.O. や祝日変動など）
     // - image: 一覧カードサムネイル用（1200x750 推奨・cover表示）
     // - detailImage: 詳細モーダル最上部に元比率・見切れなし（contain表示）で出す画像（未設定なら image を使用）
     // - hideMap: true にすると住所があってもGoogleマップリンクを非表示
@@ -956,6 +1047,16 @@
         address: "東京都渋谷区道玄坂1-2-3",
         hideMap: false,
         phone: "03-1234-5678",
+        openingHours: [
+          { dayKey: "mon", time: "11:00〜22:00" },
+          { dayKey: "tue", time: "11:00〜22:00" },
+          { dayKey: "wed", time: "", isClosed: true, specialKey: "closed" },
+          { dayKey: "thu", time: "11:00〜22:00" },
+          { dayKey: "fri", time: "11:00〜23:00" },
+          { dayKey: "sat", time: "10:00〜23:00" },
+          { dayKey: "sun", time: "10:00〜21:00" }
+        ],
+        hoursNote: "ラストオーダーは閉店の30分前",
         lat: 35.6580,
         lng: 139.7016,
         image: "./images/bop.jpg",
@@ -976,6 +1077,16 @@
         address: "全国の対象店舗",
         hideMap: true,
         phone: "",
+        openingHours: [
+          { dayKey: "mon", time: "09:00〜23:00" },
+          { dayKey: "tue", time: "09:00〜23:00" },
+          { dayKey: "wed", time: "09:00〜23:00" },
+          { dayKey: "thu", time: "09:00〜23:00" },
+          { dayKey: "fri", time: "09:00〜23:00" },
+          { dayKey: "sat", time: "09:00〜23:00" },
+          { dayKey: "sun", time: "09:00〜23:00" }
+        ],
+        hoursNote: "営業時間は店舗により異なる場合があります",
         lat: null,
         lng: null,
         image: "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=1200&q=80",
@@ -996,6 +1107,16 @@
         address: "東京都渋谷区神宮前5-8-2",
         hideMap: false,
         phone: "03-3456-7890",
+        openingHours: [
+          { dayKey: "mon", time: "", isClosed: true, specialKey: "closed" },
+          { dayKey: "tue", time: "10:00〜19:00" },
+          { dayKey: "wed", time: "10:00〜19:00" },
+          { dayKey: "thu", time: "10:00〜19:00" },
+          { dayKey: "fri", time: "10:00〜20:00" },
+          { dayKey: "sat", time: "10:00〜20:00" },
+          { dayKey: "sun", time: "10:00〜19:00" }
+        ],
+        hoursNote: "最終受付は閉館の1時間前",
         lat: 35.6641,
         lng: 139.7055,
         image: "https://images.unsplash.com/photo-1513364776144-60967b0f800f?auto=format&fit=crop&w=1200&q=80",
@@ -1016,6 +1137,8 @@
         address: "大阪府大阪市北区梅田2-5-25",
         hideMap: false,
         phone: "06-1234-5678",
+        openingHours: [],
+        hoursNote: "",
         lat: 34.7024,
         lng: 135.4959,
         image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&w=1200&q=80",
@@ -1168,6 +1291,7 @@
           summary: await translateText(cp.summary, lang),
           description: await translateText(cp.description, lang),
           bookingNote: cp.bookingNote ? await translateText(cp.bookingNote, lang) : "",
+          hoursNote: cp.hoursNote ? await translateText(cp.hoursNote, lang) : "",
           storeName: await translateText(cp.storeName, lang),
           address: cp.address ? await translateText(cp.address, lang) : ""
         };
@@ -1187,6 +1311,7 @@
         summary: tr.summary || coupon.summary,
         description: tr.description || coupon.description,
         bookingNote: coupon.bookingNote ? (tr.bookingNote || coupon.bookingNote) : "",
+        hoursNote: coupon.hoursNote ? (tr.hoursNote || coupon.hoursNote) : "",
         storeName: tr.storeName || coupon.storeName,
         address: coupon.address ? (tr.address || coupon.address) : ""
       };
@@ -1448,6 +1573,22 @@
       state.unlimitedNoticeActive = false;
     }
 
+    function formatHourRowDisplay(row, dict) {
+      if (row.specialKey === "closed") {
+        return { text: dict.closedText, isClosed: true };
+      }
+      if (row.specialKey === "24h") {
+        return { text: dict.open24hText, isClosed: false };
+      }
+      if (row.specialKey === "all_year") {
+        return { text: dict.allYearOpenText, isClosed: false };
+      }
+      if (row.isClosed) {
+        return { text: row.time || dict.closedText, isClosed: true };
+      }
+      return { text: row.time || "", isClosed: false };
+    }
+
     function renderDetailModalContent() {
       const raw = COUPONS.find((c) => c.id === state.activeCouponId);
       if (!raw) return;
@@ -1467,6 +1608,40 @@
       const shouldShowMap = Boolean(raw.address) && !raw.hideMap;
       const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${raw.storeName} ${raw.address}`)}`;
       const telHref = cp.phone ? `tel:${cp.phone.replace(/[^+\d]/g, "")}` : "";
+
+      const hasHoursList = Array.isArray(raw.openingHours) && raw.openingHours.length > 0;
+      const hasHoursNote = Boolean(cp.hoursNote);
+      const hoursRowHtml =
+        hasHoursList || hasHoursNote
+          ? `
+            <tr>
+              <th>${escapeHtml(dict.hoursLabel)}</th>
+              <td>
+                ${
+                  hasHoursList
+                    ? `
+                      <div class="hours-list">
+                        ${raw.openingHours
+                          .map((r) => {
+                            const dayLabel = dict.days[r.dayKey] || r.day || "";
+                            const formatted = formatHourRowDisplay(r, dict);
+                            return `
+                              <div class="hours-row">
+                                <span class="hours-day">${escapeHtml(dayLabel)}</span>
+                                <span class="hours-time ${formatted.isClosed ? "closed" : ""}">${escapeHtml(formatted.text)}</span>
+                              </div>
+                            `;
+                          })
+                          .join("")}
+                      </div>
+                    `
+                    : ""
+                }
+                ${hasHoursNote ? `<div class="hours-note">${escapeHtml(cp.hoursNote)}</div>` : ""}
+              </td>
+            </tr>
+          `
+          : "";
 
       const topImageHtml = topImageSrc
         ? `
@@ -1588,6 +1763,7 @@
                 `
                 : ""
             }
+            ${hoursRowHtml}
           </tbody>
         </table>
 
